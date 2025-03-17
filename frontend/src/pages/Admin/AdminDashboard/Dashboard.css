@@ -1,0 +1,21 @@
+.homedach {
+    display: flex;
+    position: absolute; /* Moves the element in relation to the page */
+    top: 0; /* Aligns to the top */
+    left: 0; /* Aligns to the left */
+    width: 100%; /* Ensures full width */
+    height: 100vh; /* Full viewport height */
+
+    .homeContainer{
+        background-color: lightblue;
+        flex: 6;
+
+        .widgets{
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+        }
+    }
+}
+
+
