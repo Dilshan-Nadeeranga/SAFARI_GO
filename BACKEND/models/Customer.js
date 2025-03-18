@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');//hello
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs'); // Import bcrypt for password hashing
 
 //Correct capitalization of Schema
