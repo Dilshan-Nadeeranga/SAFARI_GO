@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');///polshan
-//hellow world testing
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const CustomerBookingSchema = new Schema({
