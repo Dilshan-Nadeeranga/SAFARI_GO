@@ -1,3 +1,4 @@
+//frontend/src/pages/Homepage.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -34,17 +35,16 @@ function HomePage() {
   const navigate = useNavigate(); // Initialize useNavigate hook
 
   const handleBooking = (safari) => {
-    const token = sessionStorage.getItem("token");
-
-    if (!token) {
-      const proceed = window.confirm(
-        "You need to log in before booking a safari. Do you want to proceed to the login page?"
-      );
+    const token = localStorage.getItem('token'); // Changed to localStorage for consistency
+    const role = localStorage.getItem('role');
+  
+    if (!token || role !== 'user') {
+      const proceed = window.confirm('You need to log in as a user to book a safari. Do you want to proceed to the login page?');
       if (proceed) {
-        navigate("/LoginForm", { state: { safari } });
+        navigate('/LoginForm', { state: { safari } });
       }
     } else {
-      navigate("/BookSafari", { state: { safari } });
+      navigate('/BookSafari', { state: { safari } });
     }
   };
 
@@ -133,6 +133,37 @@ function HomePage() {
                 <li className="nav-item">
                   <a className="nav-link" href="/allListings">Safaris</a>
                 </li>
+
+                <li className="nav-item dropdown">
+                  <a
+                    className="nav-link dropdown-toggle"
+                    href="#"
+                    id="careersDropdown"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    Careers
+                  </a>
+                  <ul className="dropdown-menu" aria-labelledby="careersDropdown">
+                    <li>
+                      <a className="dropdown-item" href="/LoginForm" onClick={() => navigate('/LoginForm', { state: { role: 'guide' } })}>
+                        Guide
+                      </a>
+                    </li>
+                    <li>
+                      <a className="dropdown-item" href="/LoginForm" onClick={() => navigate('/LoginForm', { state: { role: 'vehicle_owner' } })}>
+                        Vehicle Owner
+                      </a>
+                    </li>
+                    <li>
+                      <a className="dropdown-item" href="/LoginForm" onClick={() => navigate('/LoginForm', { state: { role: 'user' } })}>
+                        User
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+
                 <li className="nav-item">
                   <a className="nav-link" href="/">About Us</a>
                 </li>

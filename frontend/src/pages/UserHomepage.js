@@ -1,3 +1,4 @@
+//frontend/src/pages/UserHomepage.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../Componets/CSS/home.css'; // Import the CSS file
@@ -7,12 +8,8 @@ const UserHomepage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch user details from local storage or API
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    if (storedUser) {
-      setUser(storedUser);
-    }
-  }, []);
+    if (localStorage.getItem('role') !== 'user') navigate('/LoginForm');
+  }, [navigate]);
 
   return (
     <div className="home-page">

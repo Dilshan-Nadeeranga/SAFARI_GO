@@ -1,30 +1,25 @@
+//BACKEND/models/Booking.js
 const mongoose = require('mongoose');
-//hello world hi hi hi
-//hi hi
-const Schema = mongoose.Schema;
-//hellooo
-const CustomerBookingSchema = new Schema({
-    
-    Fname: {
-        type: String,
-        required: true,
-    },
-    Lname: {
-        type: String,
-        required:  true,
-    },
-    Phonenumber1: {
-        type: Number,
-        required:  false,
-    },
-    email: {
-        type: String,
-        required: true,
-        unique: true, // Ensure that email is unique
-        match: [/\S+@\S+\.\S+/, 'Please use a valid email address'], // Basic email validation
-    }
-})
 
-const Booking = mongoose.model("Booking",CustomerBookingSchema);
+
+const BookingSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  safariId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Safari', // Assuming a Safari model exists
+    required: true,
+  },
+  Fname: { type: String, required: true },
+  Lname: { type: String, required: true },
+  Phonenumber1: { type: String },
+  email: { type: String, required: true },
+});
+
+
+const Booking = mongoose.model('Booking', BookingSchema);
 module.exports = Booking;
 
