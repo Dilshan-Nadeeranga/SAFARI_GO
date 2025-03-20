@@ -1,3 +1,4 @@
+//frontend/src/App.js
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
@@ -9,6 +10,10 @@ import UserHomepage from "./pages/UserHomepage.js"
 import UserProfile from "./pages/UserProfile.js"
 //Admin
 import Dashboard from './pages/Admin/AdminDashboard/Dashboard.jsx';
+//Guide
+import GuideDashboard from './pages/Guide/GuideDashboard.js'
+//Vehicle
+import VehicleOwnerDashboard from './pages/Vehicle/VehicleOwnerDashboard.js'
 
 
 
@@ -24,8 +29,8 @@ function App() {
           <Route path="/UserProfile" element={<UserProfile />} />
           {/*Admin*/}
           <Route path='/Dashboard' element={<Dashboard/>} />
-          
-          
+          <Route path="/GuideDashboard" element={<GuideDashboard />} />
+          <Route path="/VehicleOwnerDashboard" element={<VehicleOwnerDashboard />} />
 
           
         </Routes>

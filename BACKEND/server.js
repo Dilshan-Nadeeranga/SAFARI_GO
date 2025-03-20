@@ -1,3 +1,4 @@
+//BACKEND/server.js
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
@@ -27,12 +28,12 @@ connection.once("open", () => {
 });
 
 //Models
-const User = require("./routes/customerRoutes.js");
-const BookingRouter = require("./routes/Booking.js");
+const userRoutes = require('./routes/userRoutes');
+const bookingRoutes = require('./routes/Booking');
 
     //http://Localhost:8070/Booking
-app.use("/Booking",BookingRouter);
-app.use("/customerRoutes",User);
+    app.use('/users', userRoutes);
+    app.use('/bookings', bookingRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is up and running on port ${PORT}`);

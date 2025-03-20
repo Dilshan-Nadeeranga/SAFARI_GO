@@ -1,7 +1,8 @@
+//frontend/src/pages/LoginFrom/js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../Componets/CSS/LoginForm.css'; // Import the external CSS file
-import axios from 'axios'; // Import axios for API requests
+import '../Componets/CSS/LoginForm.css';
+import axios from 'axios';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -12,28 +13,33 @@ const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Clear previous messages
     setError('');
     setSuccessMessage('');
 
     try {
-      // Sending login request to the backend
-      const response = await axios.post('http://localhost:8070/customerRoutes/login', {
-        email,
-        password,
-      });
-
+      const response = await axios.post('http://localhost:8070/users/login', { email, password });
       if (response.status === 200) {
         setSuccessMessage('Login successful! Redirecting...');
-        
-        // Store user details (token, username, profile picture) in localStorage
         localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user)); 
-        
-        // Redirect user after login
+        localStorage.setItem('role', response.data.role);
+
         setTimeout(() => {
-          navigate('/UserHomepage');
+          switch (response.data.role) {
+            case 'user':
+              navigate('/UserHomepage');
+              break;
+            case 'guide':
+              navigate('/GuideDashboard');
+              break;
+            case 'vehicle_owner':
+              navigate('/VehicleOwnerDashboard');
+              break;
+            case 'admin':
+              navigate('/Dashboard');
+              break;
+            default:
+              navigate('/');
+          }
         }, 2000);
       }
     } catch (error) {
@@ -47,23 +53,11 @@ const LoginForm = () => {
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="email">Email:</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div className="form-group">
           <label htmlFor="password">Password:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
         {error && <p className="error-message">{error}</p>}
         {successMessage && <p className="success-message">{successMessage}</p>}
