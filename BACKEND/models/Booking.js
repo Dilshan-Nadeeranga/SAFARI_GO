@@ -1,6 +1,7 @@
 //BACKEND/models/Booking.js
 const mongoose = require('mongoose');
 
+
 const BookingSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -17,6 +18,7 @@ const BookingSchema = new mongoose.Schema({
   Phonenumber1: { type: String },
   email: { type: String, required: true },
 });
+
 
 const Booking = mongoose.model('Booking', BookingSchema);
 module.exports = Booking;
