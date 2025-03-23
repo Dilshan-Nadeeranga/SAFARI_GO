@@ -3,6 +3,7 @@ const User = require('../models/User');
 const CustomerProfile = require('../models/CustomerProfile');
 const GuideProfile = require('../models/GuideProfile');
 const VehicleOwnerProfile = require('../models/VehicleOwnerProfile');
+const Notification = require('../models/Notification');
 const jwt = require('jsonwebtoken');
 
 exports.registerCustomer = async (req, res) => {
@@ -121,5 +122,65 @@ exports.getProfile = async (req, res) => {
     res.status(200).json(profile);
   } catch (error) {
     res.status(500).json({ error: 'Error fetching profile' });
+  }
+};
+
+// ... (existing imports and exports)
+
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, Lname, Gender, Phonenumber1, Phonenumber2 } = req.body;
+    const profilePicture = req.file ? req.file.path : undefined;
+
+    let profile = await CustomerProfile.findOne({ userId: req.user.id });
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+
+    profile.name = name || profile.name;
+    profile.Lname = Lname || profile.Lname;
+    profile.Gender = Gender || profile.Gender;
+    profile.Phonenumber1 = Phonenumber1 || profile.Phonenumber1;
+    profile.Phonenumber2 = Phonenumber2 || profile.Phonenumber2;
+    if (profilePicture) profile.profilePicture = profilePicture;
+
+    await profile.save();
+    res.status(200).json(profile);
+  } catch (error) {
+    res.status(500).json({ error: "Error updating profile" });
+  }
+};
+
+exports.deleteProfile = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.user.id);
+    await CustomerProfile.findOneAndDelete({ userId: req.user.id });
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: "Error deleting account" });
+  }
+};
+
+exports.subscribeToPlan = async (req, res) => {
+  try {
+    const { plan } = req.body;
+    if (!["platinum", "gold", "silver"].includes(plan)) {
+      return res.status(400).json({ message: "Invalid plan" });
+    }
+
+    const profile = await CustomerProfile.findOne({ userId: req.user.id });
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+
+    profile.plan = plan;
+    await profile.save();
+
+    // Create notification for admin
+    const user = await User.findById(req.user.id);
+    const notification = new Notification({
+      message: `User ${user.email} subscribed to ${plan} plan`,
+    });
+    await notification.save();
+
+    res.status(200).json({ message: "Subscribed to plan successfully", plan });
+  } catch (error) {
+    res.status(500).json({ error: "Error subscribing to plan" });
   }
 };
