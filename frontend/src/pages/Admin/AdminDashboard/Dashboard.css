@@ -18,4 +18,37 @@
     }
 }
 
+.notifications-container, .users-list-container {
+    margin: 20px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  
+  .notifications ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .notifications li {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .users-list table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .users-list th, .users-list td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .users-list th {
+    background: #f4f4f4;
+  }
+
 
