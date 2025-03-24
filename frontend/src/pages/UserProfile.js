@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "../Componets/CSS/Profile.css";
-import UpdateProfile from "./UpdateProfile";
+
 
 const UserProfile = () => {
   const navigate = useNavigate();
@@ -10,53 +9,40 @@ const UserProfile = () => {
   const [isUpdateMode, setIsUpdateMode] = useState(false);
 
   useEffect(() => {
-    fetchUserData();
-  }, []);
-
-  const fetchUserData = async () => {
-    try {
-        const storedUserString = localStorage.getItem("user");
-
-        if (!storedUserString) {
-            console.error("No user found in localStorage. Redirecting to login.");
-            navigate("/LoginForm");
-            return;
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/LoginForm");
+          return;
         }
 
-        const storedUser = JSON.parse(storedUserString);
-        console.log("Stored User in Local Storage:", storedUser);
-
-        if (!storedUser._id) {
-            console.error("User ID is missing in localStorage.");
-            navigate("/LoginForm");
-            return;
-        }
-
-        console.log("User ID:", storedUser._id);
-
-        const response = await axios.get(`http://localhost:8070/customerRoutes/${storedUser._id}`);
-
-        console.log("API Response:", response.data);
+        const response = await axios.get("http://localhost:8070/users/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (response.status === 200) {
-            setUser(response.data);
-            localStorage.setItem("user", JSON.stringify(response.data.user));
+          setUser(response.data);
         }
-    } catch (error) {
+      } catch (error) {
         console.error("Error fetching user data:", error);
-        alert("Failed to fetch user data. Please try again.");
-    }
-};
+        navigate("/LoginForm");
+      }
+    };
 
-
+    fetchUserData();
+  }, [navigate]);
 
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete your account?")) {
       try {
-        await axios.delete(`http://localhost:8070/customerRoutes/${user._id}`);
+        const token = localStorage.getItem("token");
+        await axios.delete("http://localhost:8070/users/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         alert("Account deleted successfully!");
-        localStorage.removeItem("user");
         localStorage.removeItem("token");
+        localStorage.removeItem("role");
         navigate("/");
       } catch (error) {
         console.error("Error deleting user:", error);
@@ -64,6 +50,30 @@ const UserProfile = () => {
       }
     }
   };
+
+  const handleSubscribe = async (plan) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "http://localhost:8070/users/subscribe",
+        { plan },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (response.status === 200) {
+        alert(`Subscribed to ${plan} plan successfully!`);
+        setUser({ ...user, plan });
+      }
+    } catch (error) {
+      console.error("Error subscribing to plan:", error);
+      alert("Failed to subscribe to plan.");
+    }
+  };
+
+  if (!user) {
+    return <div className="loading">Loading user data...</div>;
+  }
 
   return (
     <div className={`profile-page ${isUpdateMode ? "blur-background" : ""}`}>
@@ -82,20 +92,45 @@ const UserProfile = () => {
         <div className="two-column-layout">
           <section className="user-information">
             <h2>User Information</h2>
-            {user?.profilePicture && (
+            {user.profilePicture && (
               <div className="profile-picture">
                 <img src={`http://localhost:8070/${user.profilePicture}`} alt="Profile" />
               </div>
             )}
             <div className="user-info-form">
-              <p><strong>First Name:</strong> {user?.name || "N/A"}</p>
-              <p><strong>Last Name:</strong> {user?.Lname || "N/A"}</p>
-              <p><strong>Gender:</strong> {user?.Gender || "N/A"}</p>
-              <p><strong>Phone:</strong> {user?.Phonenumber1 || "N/A"}</p>
-              <p><strong>Email:</strong> {user?.email || "N/A"}</p>
+              <p><strong>First Name:</strong> {user.name || "N/A"}</p>
+              <p><strong>Last Name:</strong> {user.Lname || "N/A"}</p>
+              <p><strong>Gender:</strong> {user.Gender || "N/A"}</p>
+              <p><strong>Phone:</strong> {user.Phonenumber1 || "N/A"}</p>
+              <p><strong>Subscription Plan:</strong> {user.plan || "Silver"}</p>
               <div className="form-buttons">
-                <button className="edit-btn" onClick={() => setIsUpdateMode(true)}>Edit</button>
-                <button className="delete-btn" onClick={handleDelete}>Delete</button>
+                <button className="edit-btn" onClick={() => setIsUpdateMode(true)}>
+                  Edit
+                </button>
+                <button className="delete-btn" onClick={handleDelete}>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section className="subscription-plans">
+            <h2>Subscription Plans</h2>
+            <div className="plans">
+              <div className="plan-card">
+                <h3>Silver</h3>
+                <p>Basic features</p>
+                <button onClick={() => handleSubscribe("silver")}>Subscribe</button>
+              </div>
+              <div className="plan-card">
+                <h3>Gold</h3>
+                <p>Advanced features</p>
+                <button onClick={() => handleSubscribe("gold")}>Subscribe</button>
+              </div>
+              <div className="plan-card">
+                <h3>Platinum</h3>
+                <p>All features included</p>
+                <button onClick={() => handleSubscribe("platinum")}>Subscribe</button>
               </div>
             </div>
           </section>

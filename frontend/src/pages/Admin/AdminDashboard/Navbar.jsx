@@ -1,3 +1,4 @@
+//frontend/src/pages/Admin/AdminDashboard/Navbar.jsx
 import React from "react"
 import "../Componet/CSS/Navbar.scss"
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';

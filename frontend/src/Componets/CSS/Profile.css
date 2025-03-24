@@ -338,3 +338,36 @@ body {
   pointer-events: none; /* Prevent interactions with the background */
 }
 
+.subscription-plans {
+  margin: 20px 0;
+}
+
+.plans {
+  display: flex;
+  gap: 20px;
+}
+
+.plan-card {
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 5px;
+  width: 200px;
+  text-align: center;
+}
+
+.plan-card h3 {
+  margin: 0 0 10px;
+}
+
+.plan-card button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.plan-card button:hover {
+  background-color: #218838;
+}

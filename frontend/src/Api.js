@@ -1,3 +1,4 @@
+//frontend/src/Api.js
 import axios from "axios";
 
 const api = axios.create({
@@ -15,11 +16,13 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
-export const fetchRooms = async () => {
+export const fetchUserProfile = async () => {
   try {
-    const response = await api.get("/rooms");
+    const response = await api.get("/users/profile");
     return response.data;
   } catch (err) {
-    throw new Error("Error fetching rooms");
+    throw new Error("Error fetching user profile");
   }
 };
+
+export default api;

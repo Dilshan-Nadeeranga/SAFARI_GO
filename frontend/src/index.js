@@ -1,9 +1,14 @@
+//frontend/src/index.js
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import App from './App';
+import ReactDOM from "react-dom";
+import "./index.css";
 
+ReactDOM.render(<App />, document.getElementById("root"));
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
 //in the public/index.html mentioned root is the above root
 root.render(
   <React.StrictMode>
@@ -12,4 +17,11 @@ root.render(
     <App />
   </React.StrictMode>
 );
+  //paypal
+/*ReactDOM.render(
+  <PayPalScriptProvider options={{ "client-id": "your-paypal-client-id", currency: "USD" }}>
+    <App />
+  </PayPalScriptProvider>,
+  document.getElementById('root')
+);*/
 
