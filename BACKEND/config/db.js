@@ -1,4 +1,5 @@
 //BACKEND/config/db.js
+//UPDATE
 const mongoose = require("mongoose");
 
 const connectDB = async () => {
