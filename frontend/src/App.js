@@ -17,8 +17,12 @@ import Dashboard from './pages/Admin/AdminDashboard/Dashboard.jsx';
 import AdminFeedbackDashboard from './pages/Admin/AdminFeedbackDashboard.js';
 // Guide
 import GuideDashboard from './pages/Guide/GuideDashboard.js';
-// Vehicle
-import VehicleOwnerDashboard from './pages/Vehicle/VehicleOwnerDashboard.js';
+
+
+//aloka
+import VehicleOwnerDashboard from "./pages/Vehicle/VehicleOwnerDashboard";
+import VehicleOwnerProfile from "./pages/Vehicle/VehicleOwnerProfile.js";
+import MyVehicles from "./pages/Vehicle/MyVehicles";
 
 function App() {
   return (
@@ -43,6 +47,9 @@ function App() {
           <Route path="/admin/feedback" element={<AdminFeedbackDashboard />} />
           <Route path="/GuideDashboard" element={<GuideDashboard />} />
           <Route path="/VehicleOwnerDashboard" element={<VehicleOwnerDashboard />} />
+          {/*Alok*/}
+          <Route path="/vehicle-owner/profile" element={<VehicleOwnerProfile />} />
+          <Route path="/vehicle-owner/vehicles" element={<MyVehicles />} />
         </Routes>
       </div>
     </Router>

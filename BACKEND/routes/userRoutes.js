@@ -1,6 +1,8 @@
+// BACKEND/routes/userRoutes.js
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
+const { updateVehicleOwnerProfile } = require("../controllers/userController");
 const { auth, authorize } = require("../middleware/auth");
 const {
   registerCustomer,
@@ -31,24 +33,25 @@ router.get("/profile", auth, getProfile);
 router.put("/profile", auth, upload.single("profilePicture"), updateProfile);
 router.delete("/profile", auth, deleteProfile);
 router.post("/subscribe", auth, subscribeToPlan);
+router.put("/profile/vehicle-owner", auth, authorize(["vehicle_owner"]), upload.single("profilePicture"), updateVehicleOwnerProfile); // Fixed route
 
 // New endpoints
-router.get('/notifications', auth, authorize(['admin']), async (req, res) => {
-  const Notification = require('../models/Notification');
+router.get("/notifications", auth, authorize(["admin"]), async (req, res) => {
+  const Notification = require("../models/Notification");
   try {
     const notifications = await Notification.find().sort({ createdAt: -1 });
     res.status(200).json(notifications);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching notifications' });
+    res.status(500).json({ error: "Error fetching notifications" });
   }
 });
 
-router.get('/all', auth, authorize(['admin']), async (req, res) => {
+router.get("/all", auth, authorize(["admin"]), async (req, res) => {
   try {
-    const users = await User.find().select('-password');
+    const users = await User.find().select("-password");
     res.status(200).json(users);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching users' });
+    res.status(500).json({ error: "Error fetching users" });
   }
 });
 
