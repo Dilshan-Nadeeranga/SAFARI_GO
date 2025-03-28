@@ -1,4 +1,3 @@
-//BACKEND/server.js
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
@@ -19,7 +18,7 @@ const URL = process.env.MONGODB_URL;
 
 mongoose.connect(URL, {
     useNewUrlParser: true,
-    useUnifiedTopology: true, 
+    useUnifiedTopology: true,
 });
 
 const connection = mongoose.connection;
@@ -27,13 +26,14 @@ connection.once("open", () => {
     console.log("Mongodb connection success!");
 });
 
-//Models
+// Routes
 const userRoutes = require('./routes/userRoutes');
 const bookingRoutes = require('./routes/Booking');
+const feedbackRoutes = require('./routes/feedbackRoutes');
 
-    //http://Localhost:8070/Booking
-    app.use('/users', userRoutes);
-    app.use('/bookings', bookingRoutes);
+app.use('/users', userRoutes);
+app.use('/bookings', bookingRoutes);
+app.use('/feedback', feedbackRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is up and running on port ${PORT}`);

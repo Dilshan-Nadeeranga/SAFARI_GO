@@ -1,3 +1,4 @@
+//frontend/src/pages/Admin/AdminDashboard/Dashboard.jsx
 import React from "react";
 import "./Dashboard.css";
 import Sidebar from "./Sidebar";
