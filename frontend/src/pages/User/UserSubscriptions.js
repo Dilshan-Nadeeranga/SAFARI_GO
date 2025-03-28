@@ -1,7 +1,6 @@
 // frontend/src/pages/User/UserSubscriptions.js
 import React, { useState } from "react";
 import axios from "axios";
-import { PayPalButtons } from "@paypal/react-paypal-js";
 import { useNavigate } from "react-router-dom"; // Added for navigation
 
 const UserSubscriptions = () => {
@@ -102,7 +101,8 @@ const UserSubscriptions = () => {
                 </button>
                 {selectedPlan === plan.name && plan.price > 0 && (
                   <div className="mt-4">
-                    <PayPalButtons
+                    <p className="text-sm text-gray-600 mb-2">Pay securely using PayPal</p>
+                    <div
                       createOrder={createOrder}
                       onApprove={onApprove}
                       onError={(err) => console.error("PayPal error:", err)}

@@ -1,18 +1,35 @@
 // frontend/src/pages/RegisterForm.js
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const RegisterForm = () => {
-  const [role, setRole] = useState('user');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [customerData, setCustomerData] = useState({ name: '', Lname: '', Gender: '', Phonenumber1: '', Phonenumber2: '', profilePicture: null });
-  const [guideData, setGuideData] = useState({ name: '', experienceYears: '', specialties: '' });
-  const [vehicleOwnerData, setVehicleOwnerData] = useState({ name: '', companyName: '', vehicles: '' });
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [role, setRole] = useState("user");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [customerData, setCustomerData] = useState({
+    name: "",
+    Lname: "",
+    Gender: "",
+    Phonenumber1: "",
+    Phonenumber2: "",
+    profilePicture: null,
+  });
+  const [guideData, setGuideData] = useState({
+    name: "",
+    experienceYears: "",
+    specialties: "",
+  });
+  const [vehicleOwnerData, setVehicleOwnerData] = useState({
+    name: "",
+    companyName: "",
+    Gender: "", // Added
+    Phonenumber1: "", // Added
+    vehicles: "",
+  });
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
   const validateForm = () => {
@@ -28,16 +45,19 @@ const RegisterForm = () => {
       setError("Passwords don't match");
       return false;
     }
-    if (role === 'user' && !customerData.name) {
+    if (role === "user" && !customerData.name) {
       setError("Name is required for User");
       return false;
     }
-    if (role === 'guide' && (!guideData.name || !guideData.experienceYears || !guideData.specialties)) {
+    if (role === "guide" && (!guideData.name || !guideData.experienceYears || !guideData.specialties)) {
       setError("All Guide fields are required");
       return false;
     }
-    if (role === 'vehicle_owner' && (!vehicleOwnerData.name || !vehicleOwnerData.vehicles)) {
-      setError("Name and Vehicle Type are required for Vehicle Owner");
+    if (
+      role === "vehicle_owner" &&
+      (!vehicleOwnerData.name || !vehicleOwnerData.vehicles || !vehicleOwnerData.Gender || !vehicleOwnerData.Phonenumber1)
+    ) {
+      setError("Name, Vehicle Type, Gender, and Contact Number are required for Vehicle Owner");
       return false;
     }
     return true;
@@ -47,48 +67,56 @@ const RegisterForm = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    setError('');
-    setSuccessMessage('');
+    setError("");
+    setSuccessMessage("");
 
     let url, data, config = {};
 
     try {
-      if (role === 'user') {
-        url = 'http://localhost:8070/users/register/customer';
+      if (role === "user") {
+        url = "http://localhost:8070/users/register/customer";
         const formData = new FormData();
-        formData.append('email', email);
-        formData.append('password', password);
-        formData.append('name', customerData.name);
-        formData.append('Lname', customerData.Lname);
-        formData.append('Gender', customerData.Gender);
-        formData.append('Phonenumber1', customerData.Phonenumber1);
-        formData.append('Phonenumber2', customerData.Phonenumber2);
+        formData.append("email", email);
+        formData.append("password", password);
+        formData.append("name", customerData.name);
+        formData.append("Lname", customerData.Lname);
+        formData.append("Gender", customerData.Gender);
+        formData.append("Phonenumber1", customerData.Phonenumber1);
+        formData.append("Phonenumber2", customerData.Phonenumber2);
         if (customerData.profilePicture) {
-          formData.append('profilePicture', customerData.profilePicture);
+          formData.append("profilePicture", customerData.profilePicture);
         }
         data = formData;
-        config.headers = { 'Content-Type': 'multipart/form-data' };
-      } else if (role === 'guide') {
-        url = 'http://localhost:8070/users/register/guide';
+        config.headers = { "Content-Type": "multipart/form-data" };
+      } else if (role === "guide") {
+        url = "http://localhost:8070/users/register/guide";
         data = { email, password, ...guideData };
-      } else if (role === 'vehicle_owner') {
-        url = 'http://localhost:8070/users/register/vehicle_owner';
-        const vehiclesArr = [{ type: vehicleOwnerData.vehicles, licensePlate: 'N/A' }];
-        data = { email, password, ...vehicleOwnerData, vehicles: JSON.stringify(vehiclesArr) };
+      } else if (role === "vehicle_owner") {
+        url = "http://localhost:8070/users/register/vehicle_owner";
+        const vehiclesArr = [{ type: vehicleOwnerData.vehicles, licensePlate: "N/A" }];
+        data = {
+          email,
+          password,
+          name: vehicleOwnerData.name,
+          companyName: vehicleOwnerData.companyName,
+          Gender: vehicleOwnerData.Gender,
+          Phonenumber1: vehicleOwnerData.Phonenumber1,
+          vehicles: JSON.stringify(vehiclesArr),
+        };
       } else {
         return;
       }
 
       const response = await axios.post(url, data, config);
       if (response.status === 201) {
-        setSuccessMessage('Registration successful! Redirecting to login...');
-        setTimeout(() => navigate('/LoginForm'), 2000);
+        setSuccessMessage("Registration successful! Redirecting to login...");
+        setTimeout(() => navigate("/LoginForm"), 2000);
       }
     } catch (error) {
       if (error.response) {
-        setError(error.response.data.message || error.response.data.error || 'Error during registration');
+        setError(error.response.data.message || error.response.data.error || "Error during registration");
       } else {
-        setError(error.message || 'Error during registration');
+        setError(error.message || "Error during registration");
       }
     }
   };
@@ -149,7 +177,7 @@ const RegisterForm = () => {
             </div>
           </div>
 
-          {role === 'user' && (
+          {role === "user" && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -215,7 +243,7 @@ const RegisterForm = () => {
             </>
           )}
 
-          {role === 'guide' && (
+          {role === "guide" && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -253,7 +281,7 @@ const RegisterForm = () => {
             </>
           )}
 
-          {role === 'vehicle_owner' && (
+          {role === "vehicle_owner" && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -276,6 +304,34 @@ const RegisterForm = () => {
                   />
                 </div>
               </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Gender</label>
+                  <select
+                    name="Gender"
+                    value={vehicleOwnerData.Gender}
+                    onChange={(e) => setVehicleOwnerData({ ...vehicleOwnerData, Gender: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Contact Number</label>
+                  <input
+                    type="tel"
+                    value={vehicleOwnerData.Phonenumber1}
+                    onChange={(e) => setVehicleOwnerData({ ...vehicleOwnerData, Phonenumber1: e.target.value })}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Enter your contact number"
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">Vehicle Type</label>
                 <input
@@ -289,12 +345,8 @@ const RegisterForm = () => {
             </>
           )}
 
-          {error && (
-            <p className="text-red-500 text-sm text-center">{error}</p>
-          )}
-          {successMessage && (
-            <p className="text-green-500 text-sm text-center">{successMessage}</p>
-          )}
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+          {successMessage && <p className="text-green-500 text-sm text-center">{successMessage}</p>}
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
@@ -303,11 +355,8 @@ const RegisterForm = () => {
           </button>
         </form>
         <p className="text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <a
-            href="/LoginForm"
-            className="text-blue-600 hover:text-blue-800 font-medium"
-          >
+          Already have an account?{" "}
+          <a href="/LoginForm" className="text-blue-600 hover:text-blue-800 font-medium">
             Login
           </a>
         </p>

@@ -1,6 +1,7 @@
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import { PayPalScriptProvider } from "@paypal/react-paypal-js";
+
+
 
 import LoginForm from "./pages/LoginForm.js";
 import Homepage from "./pages/Homepage.js";
@@ -16,8 +17,12 @@ import UserSettings from "./pages/User/UserSettings.js";
 import Dashboard from './pages/Admin/AdminDashboard/Dashboard.jsx';
 // Guide
 import GuideDashboard from './pages/Guide/GuideDashboard.js';
-// Vehicle
-import VehicleOwnerDashboard from './pages/Vehicle/VehicleOwnerDashboard.js';
+
+
+//aloka
+import VehicleOwnerDashboard from "./pages/Vehicle/VehicleOwnerDashboard";
+import VehicleOwnerProfile from "./pages/Vehicle/VehicleOwnerProfile.js";
+import MyVehicles from "./pages/Vehicle/MyVehicles";
 
 function App() {
   return (
@@ -39,6 +44,9 @@ function App() {
           <Route path='/Dashboard' element={<Dashboard />} />
           <Route path="/GuideDashboard" element={<GuideDashboard />} />
           <Route path="/VehicleOwnerDashboard" element={<VehicleOwnerDashboard />} />
+          {/*Alok*/}
+          <Route path="/vehicle-owner/profile" element={<VehicleOwnerProfile />} />
+          <Route path="/vehicle-owner/vehicles" element={<MyVehicles />} />
         </Routes>
       </div>
     </Router>
