@@ -266,13 +266,30 @@ body {
   width: 420px;
   max-width: 95%;
 }
-
+/* update in this part*/
+.update-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background to dim the content */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensures the modal appears above other elements */
+}
 .modal-content {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  width: 400px; /* Adjust width as needed */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Adds a subtle shadow */
 }
-
+/* update in this part*/
 .modal-content h2 {
   font-size: 22px;
   margin-bottom: 15px;

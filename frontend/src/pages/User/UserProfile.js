@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+//import "../../Componets/CSS/Profile.css" // add css
 import UpdateProfile from "./UpdateProfile";
 import UserLayout from "./UserLayout";
 import Header from "./Header";

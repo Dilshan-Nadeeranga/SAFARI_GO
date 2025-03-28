@@ -1,4 +1,4 @@
-// frontend/src/pages/UserHomepage.js.
+// frontend/src/pages/UserHomepage.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchUserProfile } from "../Api"; // Import the fetch function
@@ -174,6 +174,7 @@ const UserHomepage = () => {
                 <li><a href="/discover" className="text-blue-100 hover:text-blue-200 transition-colors">Discover</a></li>
                 <li><a href="/about" className="text-blue-100 hover:text-blue-200 transition-colors">About Us</a></li>
                 <li><a href="/blog" className="text-blue-100 hover:text-blue-200 transition-colors">Blog & Articles</a></li>
+                <li><a href="/feedback" className="text-blue-100 hover:text-blue-200 transition-colors">Leave Feedback</a></li>
                 <li><a href="/services" className="text-blue-100 hover:text-blue-200 transition-colors">Services</a></li>
                 <li><a href="/community" className="text-blue-100 hover:text-blue-200 transition-colors">Community</a></li>
               </ul>

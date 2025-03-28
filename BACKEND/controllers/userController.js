@@ -82,6 +82,36 @@ exports.registerVehicleOwner = async (req, res) => {
   }
 };
 
+exports.registerAdmin = async (req, res) => {
+  try {
+    const { email, password, name } = req.body;
+
+    // Admin registration should be restricted
+    // Check if the request has a secret admin key
+    const adminKey = req.headers['admin-key'];
+    if (adminKey !== process.env.ADMIN_REGISTRATION_KEY) {
+      return res.status(403).json({ message: 'Not authorized to register admin' });
+    }
+
+    let user = await User.findOne({ email });
+    if (user) return res.status(400).json({ message: 'Email already registered' });
+
+    user = new User({ email, password, role: 'admin' });
+    await user.save();
+
+    // Create admin notification
+    await new Notification({
+      type: 'ADMIN_CREATED',
+      message: `New admin account created: ${email}`,
+      details: { adminId: user._id }
+    }).save();
+
+    res.status(201).json({ message: 'Admin registered successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error registering admin' });
+  }
+};
+
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -101,6 +131,8 @@ exports.login = async (req, res) => {
 
 exports.getProfile = async (req, res) => {
   try {
+    console.log("getProfile called for user ID:", req.user.id, "with role:", req.user.role);
+    
     let profile;
     switch (req.user.role) {
       case 'user':
@@ -110,17 +142,43 @@ exports.getProfile = async (req, res) => {
         profile = await GuideProfile.findOne({ userId: req.user.id });
         break;
       case 'vehicle_owner':
+        console.log("Looking for vehicle owner profile with userId:", req.user.id);
         profile = await VehicleOwnerProfile.findOne({ userId: req.user.id });
+        console.log("Vehicle owner profile found:", profile ? "Yes" : "No");
         break;
       case 'admin':
         profile = { role: 'admin' }; // Minimal data for admin
         break;
       default:
+        console.log("Invalid role:", req.user.role);
         return res.status(400).json({ message: 'Invalid role' });
     }
-    if (!profile) return res.status(404).json({ message: 'Profile not found' });
+    
+    if (!profile) {
+      console.log("Profile not found for user role:", req.user.role);
+      
+      // If it's a vehicle owner but no profile exists, create a default one
+      if (req.user.role === 'vehicle_owner') {
+        console.log("Creating default vehicle owner profile");
+        const user = await User.findById(req.user.id);
+        
+        profile = new VehicleOwnerProfile({
+          userId: req.user.id,
+          name: user.email.split('@')[0],
+          companyName: "Default Company",
+          vehicles: []
+        });
+        await profile.save();
+        console.log("Default vehicle owner profile created");
+      } else {
+        return res.status(404).json({ message: 'Profile not found' });
+      }
+    }
+    
+    console.log("Sending profile response");
     res.status(200).json(profile);
   } catch (error) {
+    console.error("Error in getProfile:", error);
     res.status(500).json({ error: 'Error fetching profile' });
   }
 };
