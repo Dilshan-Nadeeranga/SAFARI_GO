@@ -58,27 +58,31 @@ exports.registerGuide = async (req, res) => {
   }
 };
 
+// BACKEND/controllers/userController.js
 exports.registerVehicleOwner = async (req, res) => {
   try {
-    const { email, password, name, companyName, vehicles } = req.body;
+    const { email, password, name, companyName, Gender, Phonenumber1, vehicles } = req.body;
 
     let user = await User.findOne({ email });
-    if (user) return res.status(400).json({ message: 'Email already registered' });
+    if (user) return res.status(400).json({ message: "Email already registered" });
 
-    user = new User({ email, password, role: 'vehicle_owner' });
+    user = new User({ email, password, role: "vehicle_owner" });
     await user.save();
 
     const vehicleOwnerProfile = new VehicleOwnerProfile({
       userId: user._id,
       name,
       companyName,
-      vehicles: JSON.parse(vehicles), // Assuming vehicles come as a JSON string
+      Gender,
+      Phonenumber1,
+      vehicles: vehicles ? JSON.parse(vehicles) : [],
     });
     await vehicleOwnerProfile.save();
 
-    res.status(201).json({ message: 'Vehicle Owner registered successfully' });
+    res.status(201).json({ message: "Vehicle Owner registered successfully" });
   } catch (error) {
-    res.status(500).json({ error: 'Error registering vehicle owner' });
+    console.error("Error registering vehicle owner:", error);
+    res.status(500).json({ error: "Error registering vehicle owner" });
   }
 };
 
@@ -99,6 +103,7 @@ exports.login = async (req, res) => {
   }
 };
 
+// BACKEND/controllers/userController.js
 exports.getProfile = async (req, res) => {
   try {
     let profile;
@@ -111,9 +116,18 @@ exports.getProfile = async (req, res) => {
         break;
       case 'vehicle_owner':
         profile = await VehicleOwnerProfile.findOne({ userId: req.user.id });
+        if (profile) {
+          const user = await User.findById(req.user.id).select('email'); // Fetch email from User model
+          profile = {
+            ...profile._doc,
+            email: user.email,
+            Gender: profile.Gender || '', // Add if missing
+            Phonenumber1: profile.Phonenumber1 || '' // Add if missing
+          };
+        }
         break;
       case 'admin':
-        profile = { role: 'admin' }; // Minimal data for admin
+        profile = { role: 'admin' };
         break;
       default:
         return res.status(400).json({ message: 'Invalid role' });
@@ -184,3 +198,38 @@ exports.subscribeToPlan = async (req, res) => {
     res.status(500).json({ error: "Error subscribing to plan" });
   }
 };
+
+
+// BACKEND/controllers/userController.js
+exports.updateVehicleOwnerProfile = async (req, res) => {
+  try {
+    const { name, companyName, Gender, Phonenumber1 } = req.body;
+    const profilePicture = req.file ? req.file.path : undefined;
+
+    let profile = await VehicleOwnerProfile.findOne({ userId: req.user.id });
+    if (!profile) {
+      return res.status(404).json({ message: "Profile not found" });
+    }
+
+    profile.name = name || profile.name;
+    profile.companyName = companyName || profile.companyName;
+    profile.Gender = Gender || profile.Gender;
+    profile.Phonenumber1 = Phonenumber1 || profile.Phonenumber1;
+    if (profilePicture) profile.profilePicture = profilePicture;
+
+    await profile.save();
+
+    // Include email from User model in response
+    const user = await User.findById(req.user.id).select("email");
+    const updatedProfile = {
+      ...profile._doc,
+      email: user.email,
+    };
+
+    res.status(200).json(updatedProfile);
+  } catch (error) {
+    console.error("Error updating vehicle owner profile:", error);
+    res.status(500).json({ error: "Error updating profile" });
+  }
+};
+
