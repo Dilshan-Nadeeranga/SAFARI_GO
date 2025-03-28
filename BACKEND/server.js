@@ -31,26 +31,24 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ✅ MongoDB connection
 const URL = process.env.MONGODB_URL;
 mongoose.connect(URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
 });
 const connection = mongoose.connection;
 connection.once("open", () => {
   console.log("Mongodb connection success!");
 });
 
-// ✅ Routes (AFTER middleware)
-const vehicleRoutes = require("./routes/vehicle");
-const adminRoutes = require("./routes/admin");
+
 const userRoutes = require('./routes/userRoutes');
 const bookingRoutes = require('./routes/Booking');
+const feedbackRoutes = require('./routes/feedbackRoutes');
 
+
+=======
 app.use("/vehicles", vehicleRoutes);
 app.use("/admin", adminRoutes);
 app.use("/users", userRoutes);
 app.use("/bookings", bookingRoutes);
 
+
 // ✅ Start server
 app.listen(PORT, () => {
-  console.log(`Server is up and running on port ${PORT}`);
-});
