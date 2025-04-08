@@ -1,5 +1,5 @@
 const User = require('../models/User');
-
+//new
 // Calculate discount for a user based on their premium status
 exports.calculateDiscount = async (userId, originalPrice) => {
   try {
