@@ -191,6 +191,71 @@ router.post('/', auth, authorize(['vehicle_owner']), (req, res, next) => {
     }
 });
 
+// Enhanced public vehicles route with better error handling
+router.get('/public', async (req, res) => {
+    try {
+        console.log('Public vehicles endpoint called');
+        
+        // Fetch vehicles with status 'active'
+        const vehicles = await Vehicle.find({ status: 'active' }).select(
+            'type licensePlate capacity features images ownerName contactNumber'
+        );
+        
+        console.log(`Found ${vehicles.length} active vehicles to return`);
+        
+        // Log sample data if available for debugging
+        if (vehicles.length > 0) {
+            console.log('Sample vehicle data:', {
+                id: vehicles[0]._id,
+                type: vehicles[0].type,
+                hasImages: vehicles[0].images && vehicles[0].images.length > 0
+            });
+        } else {
+            console.log('No vehicles found to return');
+        }
+        
+        res.status(200).json(vehicles);
+    } catch (error) {
+        console.error('Error fetching public vehicles:', error);
+        res.status(500).json({ 
+            error: 'Error fetching vehicles', 
+            details: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
+    }
+});
+
+// Get publicly available single vehicle - add this route after /public and before /:id
+router.get('/public/:id', async (req, res) => {
+    try {
+        const vehicle = await Vehicle.findById(req.params.id);
+        
+        if (!vehicle) {
+            return res.status(404).json({ message: 'Vehicle not found' });
+        }
+        
+        // Only return active vehicles for public view
+        if (vehicle.status !== 'active') {
+            return res.status(404).json({ message: 'Vehicle not available' });
+        }
+        
+        // Return vehicle with limited fields for public display
+        res.status(200).json({
+            _id: vehicle._id,
+            type: vehicle.type,
+            licensePlate: vehicle.licensePlate,
+            capacity: vehicle.capacity,
+            features: vehicle.features,
+            images: vehicle.images,
+            ownerName: vehicle.ownerName,
+            contactNumber: vehicle.contactNumber
+        });
+    } catch (error) {
+        console.error('Error fetching public vehicle details:', error);
+        res.status(500).json({ error: 'Error fetching vehicle details' });
+    }
+});
+
 // Get a specific vehicle
 router.get('/:id', auth, authorize(['vehicle_owner', 'admin']), async (req, res) => {
     try {

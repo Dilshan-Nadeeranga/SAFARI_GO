@@ -13,6 +13,7 @@ router.get('/all', authenticateToken, authorizeAdmin, feedbackController.getAllF
 // Get user's feedback - requires user authentication
 router.get('/user', authenticateToken, feedbackController.getUserFeedback);
 
+// These specific routes with prefixes need to come BEFORE the generic /:feedbackId route
 // Respond to feedback - requires admin access
 router.put('/respond/:feedbackId', authenticateToken, authorizeAdmin, (req, res) => {
   // Validation middleware
@@ -36,5 +37,11 @@ router.put('/guide/respond/:feedbackId', authenticateToken, authorize(['guide'])
 
 // Resolve feedback (can be used by both admin and guide)
 router.put('/resolve/:feedbackId', authenticateToken, authorize(['admin', 'guide']), feedbackController.resolveFeedback);
+
+// Update user's own feedback - requires user authentication
+router.put('/update/:feedbackId', authenticateToken, feedbackController.updateUserFeedback);
+
+// This generic route MUST come AFTER more specific routes to avoid conflicts
+router.put('/:feedbackId', authenticateToken, feedbackController.updateUserFeedback);
 
 module.exports = router;

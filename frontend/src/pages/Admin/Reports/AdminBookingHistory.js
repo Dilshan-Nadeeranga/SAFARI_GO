@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../AdminDashboard/Sidebar';
 import '../AdminDashboard/Dashboard.css';
+import { downloadPdfReport } from '../../../utils/pdfDownloader';
 
 const AdminBookingHistory = () => {
   const [bookings, setBookings] = useState([]);
@@ -24,6 +25,7 @@ const AdminBookingHistory = () => {
     totalRevenue: 0,
     completedRevenue: 0
   });
+  const [statusUpdate, setStatusUpdate] = useState({ bookingId: null, status: '' });
 
   const navigate = useNavigate();
 
@@ -44,35 +46,45 @@ const AdminBookingHistory = () => {
         setBookings(bookingsResponse.data);
         setFilteredBookings(bookingsResponse.data);
         
-        // Fetch safari details for each booking
-        const safariDetails = {};
-        const userDetails = {};
+        // Try to fetch safari details - with improved error handling
+        try {
+          // Fetch all safaris in one request (more efficient)
+          const safarisResponse = await axios.get('http://localhost:8070/safaris/all', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          // Create a map for faster lookup
+          const safariMap = {};
+          safarisResponse.data.forEach(safari => {
+            safariMap[safari._id] = safari;
+          });
+          
+          setSafaris(safariMap);
+        } catch (safariError) {
+          console.error('Error fetching safaris:', safariError);
+          // Continue with empty safari data rather than failing completely
+          setSafaris({});
+        }
         
-        // Fetch all safaris in one request (more efficient)
-        const safarisResponse = await axios.get('http://localhost:8070/safaris/all', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        // Create a map for faster lookup
-        const safariMap = {};
-        safarisResponse.data.forEach(safari => {
-          safariMap[safari._id] = safari;
-        });
-        
-        // Fetch all users in one request
-        const usersResponse = await axios.get('http://localhost:8070/users/all', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        // Create a map for faster lookup
-        const userMap = {};
-        usersResponse.data.forEach(user => {
-          userMap[user._id] = user;
-        });
-        
-        // Update the state with all the fetched data
-        setSafaris(safariMap);
-        setUsers(userMap);
+        // Try to fetch user details - with improved error handling
+        try {
+          // Fetch all users in one request
+          const usersResponse = await axios.get('http://localhost:8070/users/all', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          
+          // Create a map for faster lookup
+          const userMap = {};
+          usersResponse.data.forEach(user => {
+            userMap[user._id] = user;
+          });
+          
+          setUsers(userMap);
+        } catch (userError) {
+          console.error('Error fetching users:', userError);
+          // Continue with empty user data rather than failing completely
+          setUsers({});
+        }
         
         // Calculate booking stats
         calculateBookingStats(bookingsResponse.data);
@@ -190,6 +202,89 @@ const AdminBookingHistory = () => {
     document.body.removeChild(link);
   };
 
+  const downloadBookingsReport = () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You must be logged in to download this report');
+      return;
+    }
+    
+    try {
+      // Use the currently filtered bookings data instead of making a new request
+      const reportData = {
+        bookings: filteredBookings.map(booking => {
+          const safari = safaris[booking.safariId] || { title: 'Unknown Safari' };
+          const user = users[booking.userId] || { name: 'Unknown', Lname: '' };
+          const guide = safari.guideId ? (users[safari.guideId] || { name: 'Unknown Guide' }) : { name: 'Unknown Guide' };
+          
+          return {
+            ...booking,
+            safariName: safari.title,
+            userName: `${user.name || ''} ${user.Lname || ''}`,
+            guideName: guide.name,
+            formattedDate: formatDate(booking.date),
+            formattedAmount: `Rs. ${booking.amount?.toLocaleString() || 'N/A'}`
+          };
+        }),
+        stats: bookingStats,
+        filters: {
+          status: filter,
+          dateRange: {
+            start: dateRange.start ? formatDate(dateRange.start) : 'Any',
+            end: dateRange.end ? formatDate(dateRange.end) : 'Any'
+          }
+        },
+        title: 'Booking History Report',
+        generatedDate: new Date().toLocaleDateString()
+      };
+      
+      // Call the PDF downloader with data
+      downloadPdfReport(
+        `http://localhost:8070/admin/bookings/report`,
+        token, 
+        reportData, 
+        () => console.log('Report generated successfully'),
+        (err) => {
+          console.error('Error generating report:', err);
+          alert('An error occurred while generating the report. Check the console for details.');
+        }
+      );
+    } catch (err) {
+      console.error('Error preparing data for report:', err);
+      alert('Failed to prepare data for report generation');
+    }
+  };
+
+  const handleStatusChange = async (bookingId, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(
+        `http://localhost:8070/bookings/update/${bookingId}`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      // Update the local state
+      setBookings(bookings.map(booking => 
+        booking._id === bookingId 
+          ? { ...booking, status: newStatus } 
+          : booking
+      ));
+      
+      // Also update filtered bookings
+      setFilteredBookings(filteredBookings.map(booking => 
+        booking._id === bookingId 
+          ? { ...booking, status: newStatus } 
+          : booking
+      ));
+      
+      alert(`Booking status updated to ${newStatus}`);
+    } catch (err) {
+      console.error('Error updating booking status:', err);
+      alert('Failed to update booking status');
+    }
+  };
+
   if (loading) {
     return (
       <div className="home">
@@ -255,6 +350,8 @@ const AdminBookingHistory = () => {
                   <option value="pending_payment">Pending Payment</option>
                   <option value="confirmed">Confirmed</option>
                   <option value="completed">Completed</option>
+                  <option value="yet_to_refund">Awaiting Refund</option>
+                  <option value="refunded">Refunded</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
               </div>
@@ -293,9 +390,18 @@ const AdminBookingHistory = () => {
               <div className="self-end ml-auto">
                 <button
                   onClick={exportToCsv}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 mr-2"
                 >
                   Export to CSV
+                </button>
+                <button
+                  onClick={downloadBookingsReport}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download PDF Report
                 </button>
               </div>
             </div>
@@ -313,6 +419,7 @@ const AdminBookingHistory = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">People</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Refund</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
@@ -335,15 +442,41 @@ const AdminBookingHistory = () => {
                         <td className="px-6 py-4 whitespace-nowrap">{booking.numberOfPeople}</td>
                         <td className="px-6 py-4 whitespace-nowrap">Rs. {booking.amount?.toLocaleString() || 'N/A'}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            ${booking.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                            booking.status === 'confirmed' ? 'bg-blue-100 text-blue-800' : 
-                            booking.status === 'cancelled' ? 'bg-red-100 text-red-800' : 
-                            'bg-yellow-100 text-yellow-800'}`}
-                          >
-                            {booking.status === 'pending_payment' ? 'Pending Payment' : 
-                             booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                          </span>
+                          {booking.status === 'refunded' || booking.status === 'yet_to_refund' ? 
+                            <span className={booking.refundAmount > 0 ? "text-green-600" : "text-gray-500"}>
+                              {booking.refundAmount > 0 ? `Rs. ${booking.refundAmount.toLocaleString()}` : 'N/A'}
+                            </span> : 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                              ${booking.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                              booking.status === 'confirmed' ? 'bg-blue-100 text-blue-800' : 
+                              booking.status === 'cancelled' ? 'bg-red-100 text-red-800' : 
+                              booking.status === 'yet_to_refund' ? 'bg-orange-100 text-orange-800' :
+                              booking.status === 'refunded' ? 'bg-purple-100 text-purple-800' :
+                              'bg-yellow-100 text-yellow-800'}`}
+                            >
+                              {booking.status === 'pending_payment' ? 'Pending Payment' :
+                               booking.status === 'yet_to_refund' ? 'Awaiting Refund' :
+                               booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                            </span>
+                            <div className="ml-2">
+                              <select 
+                                className="text-sm border border-gray-300 rounded"
+                                onChange={(e) => handleStatusChange(booking._id, e.target.value)}
+                                defaultValue=""
+                              >
+                                <option value="" disabled>Change status</option>
+                                <option value="pending_payment">Pending Payment</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="completed">Completed</option>
+                                <option value="yet_to_refund">Awaiting Refund</option>
+                                <option value="refunded">Refunded</option>
+                                <option value="cancelled">Cancelled</option>
+                              </select>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     );

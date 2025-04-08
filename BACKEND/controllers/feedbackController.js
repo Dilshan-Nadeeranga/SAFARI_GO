@@ -307,6 +307,54 @@ exports.resolveFeedback = async (req, res) => {
   }
 };
 
+// Update user's own feedback
+exports.updateUserFeedback = async (req, res) => {
+  try {
+    const { feedbackId } = req.params;
+    const { text, rating } = req.body;
+    const userId = req.user.id;
+    
+    // Validate input
+    if (!text || text.trim() === '') {
+      return res.status(400).json({ message: 'Feedback text cannot be empty' });
+    }
+    
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+    }
+    
+    // Find feedback and verify ownership
+    const feedback = await Feedback.findOne({ 
+      _id: feedbackId,
+      userId: userId
+    });
+    
+    if (!feedback) {
+      return res.status(404).json({ message: 'Feedback not found or you are not authorized to edit it' });
+    }
+    
+    // Only allow updates if feedback is still pending
+    if (feedback.status !== 'pending') {
+      return res.status(400).json({ 
+        message: 'Cannot update feedback that has already been responded to or resolved' 
+      });
+    }
+    
+    // Update the feedback
+    feedback.text = text;
+    feedback.rating = rating;
+    await feedback.save();
+    
+    res.status(200).json({ 
+      message: 'Feedback updated successfully', 
+      feedback 
+    });
+  } catch (error) {
+    console.error('Error updating user feedback:', error);
+    res.status(500).json({ error: 'Failed to update feedback' });
+  }
+};
+
 module.exports = {
   submitFeedback: exports.submitFeedback,
   getAllFeedback: exports.getAllFeedback,
@@ -316,5 +364,6 @@ module.exports = {
   getGuideFeedback: exports.getGuideFeedback,
   guideRespondToFeedback: exports.guideRespondToFeedback,
   getAdminFeedbackReport: exports.getAdminFeedbackReport,
-  resolveFeedback: exports.resolveFeedback
+  resolveFeedback: exports.resolveFeedback,
+  updateUserFeedback: exports.updateUserFeedback // Add this new export
 };

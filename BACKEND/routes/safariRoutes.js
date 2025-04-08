@@ -5,6 +5,7 @@ const fs = require('fs');
 const router = express.Router();
 const { auth, authorize } = require('../middleware/auth');
 const safariController = require('../controllers/safariController');
+const Safari = require('../models/Safari'); // Add this import
 
 // Configure multer for storing safari images
 const storage = multer.diskStorage({
@@ -41,6 +42,22 @@ const upload = multer({
 // Test route to check if safari routes are working
 router.get('/test', (req, res) => {
   res.status(200).json({ message: 'Safari routes are working!' });
+});
+
+// Add this specific route for fetching all safaris (make it appear before the parameterized routes)
+router.get('/all', async (req, res) => {
+  try {
+    console.log('Fetching all safaris for admin dashboard');
+    const safaris = await Safari.find()
+      .populate('guideId', 'name email')
+      .lean();
+    
+    console.log(`Found ${safaris.length} safaris`);
+    res.status(200).json(safaris);
+  } catch (error) {
+    console.error('Error fetching all safaris:', error);
+    res.status(500).json({ error: 'Failed to fetch safaris' });
+  }
 });
 
 // Routes - make sure specific routes come before parameterized routes

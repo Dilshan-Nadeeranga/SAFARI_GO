@@ -276,33 +276,11 @@ const VehicleOwnerDashboard = () => {
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-amber-500">
-          <div className="flex justify-between items-center">
-            <div>
-              <div className="text-gray-500 text-sm font-medium">Pending Bookings</div>
-              <div className="text-4xl font-bold mt-2 text-amber-600">{stats.pendingBookings}</div>
-            </div>
-            <div className="text-amber-500 text-2xl">
-              {/* Clock/pending icon representation */}
-              ⏳
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-700">
-          <div className="flex justify-between items-center">
-            <div>
-              <div className="text-gray-500 text-sm font-medium">Total Earnings</div>
-              <div className="text-4xl font-bold mt-2 text-blue-600">${stats.totalEarnings}</div>
-            </div>
-            <div className="text-blue-700 text-2xl">
-              {/* Money icon representation */}
-              💰
-            </div>
-          </div>
-        </div>
+        
+       
       </div>
 
-      {/* Earnings chart */}
+      {/* Earnings chart
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-lg font-semibold mb-4">Monthly Earnings</h2>
         <div className="h-72">
@@ -325,7 +303,7 @@ const VehicleOwnerDashboard = () => {
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </div> */}
 
       {/* Vehicles list with view toggle */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">

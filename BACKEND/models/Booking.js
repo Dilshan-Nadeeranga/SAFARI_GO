@@ -12,9 +12,13 @@ const BookingSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   status: {
     type: String,
-    enum: ['pending_payment', 'confirmed', 'completed', 'cancelled'],
+    enum: ['pending_payment', 'confirmed', 'completed', 'yet_to_refund', 'refunded', 'cancelled'],
     default: 'pending_payment'
   },
+  refundAmount: { type: Number },
+  refundPercentage: { type: Number },
+  daysUntilTrip: { type: Number },
+  refundProcessedDate: { type: Date },
   paymentId: { type: String },
   paymentDetails: { type: String },
   createdAt: { type: Date, default: Date.now }

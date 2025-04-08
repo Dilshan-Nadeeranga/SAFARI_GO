@@ -3,6 +3,7 @@ import axios from 'axios';
 import Sidebar from '../AdminDashboard/Sidebar';
 import '../AdminDashboard/Dashboard.css';
 import EditVehicleModal from '../../Vehicle/EditVehicleModal';
+import { generateVehiclePdf } from '../../../utils/VehiclePdfGenerator';
 
 const AdminVehiclesList = () => {
   const [vehicles, setVehicles] = useState([]);
@@ -175,6 +176,12 @@ const AdminVehiclesList = () => {
     );
   };
 
+  // Add a new function to handle PDF generation
+  const handleDownloadPdf = (vehicle) => {
+    const ownerData = vehicleOwners[vehicle.ownerId] || {};
+    generateVehiclePdf(vehicle, ownerData);
+  };
+
   return (
     <div className="home">
       <Sidebar />
@@ -194,37 +201,31 @@ const AdminVehiclesList = () => {
               />
             </div>
             
-            <div className="w-full md:w-1/2 flex gap-2">
-              <button 
-                onClick={() => setViewMode('all')}
-                className={`px-3 py-1 rounded-md ${viewMode === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-              >
-                All
-              </button>
-              <button 
-                onClick={() => setViewMode('active')}
-                className={`px-3 py-1 rounded-md ${viewMode === 'active' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
-              >
-                Active
-              </button>
-              <button 
-                onClick={() => setViewMode('maintenance')}
-                className={`px-3 py-1 rounded-md ${viewMode === 'maintenance' ? 'bg-yellow-600 text-white' : 'bg-gray-200'}`}
-              >
-                Maintenance
-              </button>
-              <button 
-                onClick={() => setViewMode('unavailable')}
-                className={`px-3 py-1 rounded-md ${viewMode === 'unavailable' ? 'bg-red-600 text-white' : 'bg-gray-200'}`}
-              >
-                Unavailable
-              </button>
-              <button 
-                onClick={() => setViewMode('expiring-soon')}
-                className={`px-3 py-1 rounded-md ${viewMode === 'expiring-soon' ? 'bg-purple-600 text-white' : 'bg-gray-200'}`}
-              >
-                Expiring Soon
-              </button>
+            <div className="w-full md:w-1/2 flex gap-2 justify-between">
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setViewMode('all')}
+                  className={`px-3 py-1 rounded-md ${viewMode === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                >
+                  All
+                </button>
+                <button 
+                  onClick={() => setViewMode('active')}
+                  className={`px-3 py-1 rounded-md ${viewMode === 'active' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
+                >
+                  Active
+                </button>
+              
+             
+                <button 
+                  onClick={() => setViewMode('expiring-soon')}
+                  className={`px-3 py-1 rounded-md ${viewMode === 'expiring-soon' ? 'bg-purple-600 text-white' : 'bg-gray-200'}`}
+                >
+                  Expiring Soon
+                </button>
+              </div>
+              
+            
             </div>
           </div>
           
@@ -240,18 +241,8 @@ const AdminVehiclesList = () => {
                 {vehicles.filter(v => v.status === 'active').length}
               </div>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-yellow-500">
-              <div className="text-sm text-gray-600">In Maintenance</div>
-              <div className="text-2xl font-bold text-yellow-600">
-                {vehicles.filter(v => v.status === 'maintenance').length}
-              </div>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-red-500">
-              <div className="text-sm text-gray-600">Unavailable</div>
-              <div className="text-2xl font-bold text-red-600">
-                {vehicles.filter(v => v.status === 'unavailable').length}
-              </div>
-            </div>
+            
+           
           </div>
           
           {loading ? (
@@ -349,6 +340,17 @@ const AdminVehiclesList = () => {
                               className="text-indigo-600 hover:text-indigo-900 mr-3"
                             >
                               Edit
+                            </button>
+                            <button
+                              onClick={() => handleDownloadPdf(vehicle)}
+                              className="text-green-600 hover:text-green-900 mr-3"
+                            >
+                              <span className="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                PDF
+                              </span>
                             </button>
                             <button
                               onClick={() => openDeleteConfirmation(vehicle)}
@@ -503,6 +505,15 @@ const AdminVehiclesList = () => {
               )}
               
               <div className="flex justify-end">
+                <button
+                  onClick={() => handleDownloadPdf(selectedVehicle)}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 mr-4 flex items-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Download PDF
+                </button>
                 <button
                   onClick={() => setIsViewModalOpen(false)}
                   className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"

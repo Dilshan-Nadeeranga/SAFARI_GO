@@ -1,15 +1,9 @@
 const mongoose = require('mongoose');
 
 const SafariSchema = new mongoose.Schema({
-  guideId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
   title: {
     type: String,
-    required: true,
-    trim: true
+    required: true
   },
   description: {
     type: String,
@@ -19,11 +13,11 @@ const SafariSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  duration: {
-    type: Number, // in hours
+  price: {
+    type: Number,
     required: true
   },
-  price: {
+  duration: {
     type: Number,
     required: true
   },
@@ -31,20 +25,38 @@ const SafariSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  includes: [{
-    type: String
-  }],
-  images: [{
-    type: String // paths to images
-  }],
+  images: {
+    type: [String],
+    default: []
+  },
+  guideId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   status: {
     type: String,
-    enum: ['active', 'inactive', 'pending_approval'],
-    default: 'pending_approval'
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true
 });
 
-const Safari = mongoose.model('Safari', SafariSchema);
+// Add index for faster lookups
+SafariSchema.index({ guideId: 1 });
+SafariSchema.index({ status: 1 });
+
+// Make sure we have only one model definition
+let Safari;
+try {
+  Safari = mongoose.model('Safari');
+} catch (e) {
+  Safari = mongoose.model('Safari', SafariSchema);
+}
+
 module.exports = Safari;

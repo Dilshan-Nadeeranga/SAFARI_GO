@@ -2,13 +2,21 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Sidebar from '../AdminDashboard/Sidebar';
 import '../AdminDashboard/Dashboard.css';
+import { useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const VehicleOwnersList = () => {
+  const navigate = useNavigate();
   const [vehicleOwners, setVehicleOwners] = useState([]);
   const [vehicles, setVehicles] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  // New state variables for modals
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedOwner, setSelectedOwner] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -154,12 +162,151 @@ const VehicleOwnersList = () => {
     return owner.profile?.companyName || "N/A";
   };
 
+  // Function to handle the edit button click
+  const handleEditOwner = (ownerId) => {
+    navigate(`/admin/vehicle-owners/${ownerId}`);
+  };
+
+  // Function to handle the view button click
+  const handleViewOwner = (owner) => {
+    setSelectedOwner(owner);
+    setViewModalOpen(true);
+  };
+
+  // Function to close the view modal
+  const closeViewModal = () => {
+    setViewModalOpen(false);
+    setSelectedOwner(null);
+  };
+
+  // Function to generate PDF for a single vehicle owner
+  const generateSingleOwnerPDF = (owner) => {
+    setPdfLoading(true);
+    
+    try {
+      const doc = new jsPDF();
+      const ownerName = getOwnerDisplayName(owner);
+      
+      // Add title and basic info
+      doc.setFontSize(18);
+      doc.text('Vehicle Owner Details', 14, 22);
+      
+      doc.setFontSize(12);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+      
+      // Add owner info
+      doc.setFontSize(14);
+      doc.text('Owner Information', 14, 45);
+      
+      doc.setFontSize(12);
+      const ownerInfo = [
+        { label: 'ID:', value: owner._id },
+        { label: 'Name:', value: ownerName },
+        { label: 'Email:', value: owner.email },
+        { label: 'Company:', value: getCompanyName(owner) },
+        { label: 'Phone:', value: owner.profile?.Phonenumber1 || 'N/A' },
+        { label: 'Total Vehicles:', value: getVehicleCount(owner).toString() }
+      ];
+      
+      let yPos = 55;
+      ownerInfo.forEach(item => {
+        doc.text(`${item.label} ${item.value}`, 14, yPos);
+        yPos += 8;
+      });
+      
+      // Add vehicles table
+      doc.setFontSize(14);
+      doc.text('Vehicles', 14, yPos + 10);
+      
+      const ownerVehicles = vehicles[owner._id] || [];
+      if (ownerVehicles.length > 0) {
+        const tableColumns = ['Type', 'License Plate', 'Status', 'Capacity'];
+        const tableRows = ownerVehicles.map(vehicle => [
+          vehicle.type || 'N/A',
+          vehicle.licensePlate || 'N/A',
+          vehicle.status || 'N/A',
+          vehicle.capacity?.toString() || 'N/A'
+        ]);
+        
+        doc.autoTable({
+          head: [tableColumns],
+          body: tableRows,
+          startY: yPos + 15
+        });
+      } else {
+        doc.setFontSize(12);
+        doc.text('No vehicles found', 14, yPos + 20);
+      }
+      
+      // Save the PDF with owner name
+      doc.save(`vehicle_owner_${ownerName.replace(/\s+/g, '_')}.pdf`);
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      alert('Failed to generate PDF');
+    }
+    
+    setPdfLoading(false);
+  };
+
+  // Function to generate PDF for all vehicle owners
+  const generateAllOwnersPDF = () => {
+    setPdfLoading(true);
+    
+    try {
+      const doc = new jsPDF();
+      
+      // Add title and report info
+      doc.setFontSize(18);
+      doc.text('Vehicle Owners Report', 14, 22);
+      
+      doc.setFontSize(12);
+      doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+      doc.text(`Total Owners: ${vehicleOwners.length}`, 14, 38);
+      
+      // Create table data
+      const tableColumns = ['ID', 'Name', 'Email', 'Company', '# Vehicles'];
+      const tableRows = vehicleOwners.map(owner => [
+        owner._id.substring(0, 8),
+        getOwnerDisplayName(owner),
+        owner.email,
+        getCompanyName(owner),
+        getVehicleCount(owner).toString()
+      ]);
+      
+      // Add the table
+      doc.autoTable({
+        head: [tableColumns],
+        body: tableRows,
+        startY: 45,
+        styles: { overflow: 'ellipsize' },
+        columnStyles: {
+          0: { cellWidth: 25 },
+          1: { cellWidth: 40 },
+          2: { cellWidth: 60 },
+          3: { cellWidth: 40 },
+          4: { cellWidth: 25 }
+        }
+      });
+      
+      // Save the PDF
+      doc.save('all_vehicle_owners_report.pdf');
+    } catch (err) {
+      console.error('Error generating PDF:', err);
+      alert('Failed to generate PDF');
+    }
+    
+    setPdfLoading(false);
+  };
+
   return (
     <div className="home">
       <Sidebar />
       <div className="homeContainer">
         <div className="users-list">
-          <h2 className="text-xl font-semibold mb-4">All Vehicle Owners</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">All Vehicle Owners</h2>
+       
+          </div>
           
           {/* Search bar */}
           <div className="mb-4">
@@ -173,9 +320,14 @@ const VehicleOwnersList = () => {
           </div>
           
           {loading ? (
-            <p>Loading vehicle owners and vehicles...</p>
+            <div className="flex justify-center items-center h-64">
+              <div className="loader"></div>
+              <p className="ml-3">Loading vehicle owners and vehicles...</p>
+            </div>
           ) : error ? (
-            <p className="text-red-500">{error}</p>
+            <div className="bg-red-100 text-red-700 p-4 rounded">
+              <p>{error}</p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table>
@@ -207,8 +359,25 @@ const VehicleOwnersList = () => {
                         </td>
                         <td>
                           <div className="action-buttons">
-                            <button className="view-btn">View</button>
-                            <button className="edit-btn">Edit</button>
+                            <button 
+                              className="view-btn" 
+                              onClick={() => handleViewOwner(owner)}
+                            >
+                              View
+                            </button>
+                            {/* <button 
+                              className="edit-btn" 
+                              onClick={() => handleEditOwner(owner._id)}
+                            >
+                              Edit
+                            </button> */}
+                            <button
+                              className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                              onClick={() => generateSingleOwnerPDF(owner)}
+                              disabled={pdfLoading}
+                            >
+                              PDF
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -228,6 +397,119 @@ const VehicleOwnersList = () => {
             </div>
           )}
         </div>
+        
+        {/* View Modal */}
+        {viewModalOpen && selectedOwner && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+              <div className="border-b px-4 py-3 flex justify-between items-center">
+                <h3 className="text-xl font-semibold">Vehicle Owner Details</h3>
+                <button onClick={closeViewModal} className="text-gray-500 hover:text-gray-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="p-4">
+                {/* Owner Information */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-medium mb-2 border-b pb-2">Owner Information</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Name</p>
+                      <p>{getOwnerDisplayName(selectedOwner)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Email</p>
+                      <p>{selectedOwner.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Company</p>
+                      <p>{getCompanyName(selectedOwner)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-500">Phone</p>
+                      <p>{selectedOwner.profile?.Phonenumber1 || 'N/A'}</p>
+                    </div>
+                    {selectedOwner.profile?.address && (
+                      <div className="col-span-2">
+                        <p className="text-sm font-medium text-gray-500">Address</p>
+                        <p>{selectedOwner.profile.address}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Vehicles Information */}
+                <div>
+                  <h4 className="text-lg font-medium mb-2 border-b pb-2">Vehicles</h4>
+                  {getVehicleCount(selectedOwner) > 0 ? (
+                    <div className="space-y-4">
+                      {(vehicles[selectedOwner._id] || []).map((vehicle, idx) => (
+                        <div key={idx} className="border rounded-lg p-3">
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Type</p>
+                              <p>{vehicle.type || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">License Plate</p>
+                              <p>{vehicle.licensePlate || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Status</p>
+                              <p className={`${
+                                vehicle.status === 'active' ? 'text-green-600' :
+                                vehicle.status === 'maintenance' ? 'text-yellow-600' : 'text-red-600'
+                              }`}>
+                                {vehicle.status || 'N/A'}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Capacity</p>
+                              <p>{vehicle.capacity || 'N/A'}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No vehicles found for this owner.</p>
+                  )}
+                </div>
+                
+                <div className="mt-6 flex justify-end">
+                  <button
+                    onClick={() => generateSingleOwnerPDF(selectedOwner)}
+                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mr-2 flex items-center"
+                    disabled={pdfLoading}
+                  >
+                    {pdfLoading ? (
+                      <>
+                        <div className="spinner mr-2"></div>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Download PDF
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => handleEditOwner(selectedOwner._id)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  >
+                    Edit Owner
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

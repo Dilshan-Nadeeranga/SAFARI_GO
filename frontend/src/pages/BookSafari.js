@@ -27,6 +27,20 @@ const BookSafari = () => {
     expiryDate: '',
     cvv: ''
   });
+  
+  // Add premium status state
+  const [premiumStatus, setPremiumStatus] = useState({
+    isPremium: false,
+    discountRate: 0,
+    premiumUntil: null
+  });
+  
+  // Add discount information
+  const [priceDetails, setPriceDetails] = useState({
+    originalPrice: 0,
+    discountAmount: 0,
+    finalPrice: 0
+  });
 
   useEffect(() => {
     // Check if safari data exists in location state
@@ -73,15 +87,44 @@ const BookSafari = () => {
       }
     };
     
+    // Fetch user premium status
+    const fetchPremiumStatus = async () => {
+      try {
+        const response = await axios.get('http://localhost:8070/users/premium/status', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        
+        setPremiumStatus({
+          isPremium: response.data.isPremium,
+          discountRate: response.data.discountRate,
+          premiumUntil: response.data.premiumUntil
+        });
+      } catch (err) {
+        console.error('Error fetching premium status:', err);
+      }
+    };
+    
     fetchUserProfile();
+    fetchPremiumStatus();
   }, [navigate, location.state, safari]);
 
   // Update total amount when number of people changes
   useEffect(() => {
     if (safari) {
-      setTotalAmount(safari.price * bookingData.numberOfPeople);
+      const originalPrice = safari.price * bookingData.numberOfPeople;
+      const discountRate = premiumStatus.isPremium ? premiumStatus.discountRate / 100 : 0;
+      const discountAmount = originalPrice * discountRate;
+      const finalPrice = originalPrice - discountAmount;
+      
+      setPriceDetails({
+        originalPrice,
+        discountAmount,
+        finalPrice
+      });
+      
+      setTotalAmount(finalPrice);
     }
-  }, [bookingData.numberOfPeople, safari]);
+  }, [bookingData.numberOfPeople, safari, premiumStatus]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -486,9 +529,38 @@ const BookSafari = () => {
                 <p className="text-gray-600 mb-2">Duration: {safari.duration} hours</p>
                 <p className="text-gray-600 mb-2">Price per person: Rs. {safari.price.toLocaleString()}</p>
                 <p className="text-gray-600 mb-4">Maximum capacity: {safari.capacity} people</p>
+                
+                {/* Price calculation with discount */}
                 <div className="bg-blue-50 p-3 rounded-md">
-                  <p className="text-blue-800 font-medium">Total Amount: Rs. {totalAmount.toLocaleString()}</p>
+                  <p className="text-blue-800 font-medium mb-1">Original Price: Rs. {priceDetails.originalPrice.toLocaleString()}</p>
+                  
+                  {/* Show discount only for premium users */}
+                  {premiumStatus.isPremium && (
+                    <div className="flex items-center space-x-2 mb-1">
+                      <span className="text-green-700 font-medium">Premium Discount ({premiumStatus.discountRate}%):</span>
+                      <span className="text-green-700">- Rs. {priceDetails.discountAmount.toLocaleString()}</span>
+                      <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">Premium Member</span>
+                    </div>
+                  )}
+                  
+                  <p className="text-blue-800 font-bold text-lg mt-1">Final Price: Rs. {priceDetails.finalPrice.toLocaleString()}</p>
                 </div>
+                
+                {/* Premium membership promotion */}
+                {!premiumStatus.isPremium && (
+                  <div className="mt-4 bg-gradient-to-r from-purple-100 to-indigo-100 p-3 rounded-md border border-purple-200">
+                    <p className="text-purple-800 font-medium">
+                      <span className="mr-1">✨</span>
+                      Get up to 15% off by becoming a premium member!
+                    </p>
+                    <button 
+                      onClick={() => navigate('/user/subscriptions')}
+                      className="mt-2 text-sm bg-purple-600 text-white px-3 py-1 rounded-md hover:bg-purple-700 transition-colors"
+                    >
+                      View Premium Plans
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 

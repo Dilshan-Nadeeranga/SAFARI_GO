@@ -1,7 +1,7 @@
 // frontend/src/pages/User/UserLayout.js
 import React from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { FaTachometerAlt, FaSafari, FaDollarSign, FaCog, FaSignOutAlt, FaCompass } from "react-icons/fa";
+import { FaTachometerAlt, FaSafari, FaDollarSign, FaCog, FaSignOutAlt, FaCompass, FaTruck } from "react-icons/fa";
 
 const UserLayout = ({ children }) => {
   const navigate = useNavigate();
@@ -45,20 +45,6 @@ const UserLayout = ({ children }) => {
                 <span>Explore Safaris</span>
               </NavLink>
             </li>
-            {/*Update Explore Vehicle*/}
-            <li>
-              <NavLink
-                to="/user/vehicle"
-                className={({ isActive }) =>
-                  `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
-                  }`
-                }
-              >
-                <FaCompass />
-                <span>Explore Vehicle</span>
-              </NavLink>
-            </li>
             <li>
               <NavLink
                 to="/user/trips"
@@ -70,6 +56,19 @@ const UserLayout = ({ children }) => {
               >
                 <FaSafari />
                 <span>Trips</span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/user/rentals"
+                className={({ isActive }) =>
+                  `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
+                  }`
+                }
+              >
+                <FaTruck />
+                <span>My Rentals</span>
               </NavLink>
             </li>
             <li>

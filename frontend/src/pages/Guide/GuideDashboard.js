@@ -349,6 +349,9 @@ const GuideDashboard = () => {
             >
               Logout
             </button>
+            <button onClick={() => navigate('/guide-feedback')} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+              Guide Feedback
+            </button>
           </div>
         </div>
       </header>
