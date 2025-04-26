@@ -769,4 +769,5 @@ const BookSafari = () => {
   );
 };
 
+
 export default BookSafari;
