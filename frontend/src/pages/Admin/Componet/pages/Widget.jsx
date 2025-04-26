@@ -5,18 +5,15 @@ import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined
 import Person3OutlinedIcon from '@mui/icons-material/Person3Outlined';
 import ForestOutlinedIcon from '@mui/icons-material/ForestOutlined';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined';
 
-const Widget = ({ type }) => {
+const Widget = ({ type, count, diff }) => {
     let data;
 
-    // Temporary values
-    const amount = 100;
-    const diff = 20;
-
     switch (type) {
-        case "user":
+        case "users":
             data = {
-                title: "User",
+                title: "Users",
                 isMoney: false,
                 link: "View all users",
                 icon: <PersonOutlineOutlinedIcon className="icon" 
@@ -25,31 +22,47 @@ const Widget = ({ type }) => {
                 }} />,
             };
             break;
-        case "guide":
+        case "guides":
             data = {
-                title: "Guide",
+                title: "Guides",
                 isMoney: false,
                 link: "View all guides",
-                icon: <Person3OutlinedIcon className="icon" />,
+                icon: <Person3OutlinedIcon className="icon" 
+                style={{color:"goldenrod",
+                backgroundColor: "rgba(218,165,32,0.2)",
+                }} />,
             };
             break;
-        case "package":
+        case "vehicle-owners":
             data = {
-                title: "Package",
+                title: "Vehicle Owners",
                 isMoney: false,
-                link: "View all packages",
-                icon: <ForestOutlinedIcon className="icon" />,
+                link: "View all vehicle owners",
+                icon: <DirectionsCarIcon className="icon" 
+                style={{color:"green",
+                backgroundColor: "rgba(0,128,0,0.2)",
+                }} />,
             };
             break;
-        case "vehicle":
+        case "bookings":
             data = {
-                title: "Vehicle",
+                title: "Bookings",
                 isMoney: false,
-                link: "View all vehicles",
-                icon: <DirectionsCarIcon className="icon" />,
+                link: "View all bookings",
+                icon: <ListAltOutlinedIcon className="icon" 
+                style={{color:"purple",
+                backgroundColor: "rgba(128,0,128,0.2)",
+                }} />,
             };
             break;
         default:
+            // Provide default data to prevent errors
+            data = {
+                title: "Unknown",
+                isMoney: false,
+                link: "View details",
+                icon: <PersonOutlineOutlinedIcon className="icon" />,
+            };
             break;
     }
 
@@ -58,14 +71,14 @@ const Widget = ({ type }) => {
             <div className="left">
                 <span className="title">{data.title}</span>
                 <span className="counter">
-                    {data.isMoney && "$"}{amount}
+                    {data.isMoney && "$"}{count || 0}
                 </span>
                 <span className="link">{data.link}</span>
             </div>
             <div className="right">
                 <div className="percentage positive">
                     <KeyboardArrowUpOutlinedIcon />
-                    {diff}%
+                    {diff || 0}%
                 </div>
                 {data.icon}
             </div>

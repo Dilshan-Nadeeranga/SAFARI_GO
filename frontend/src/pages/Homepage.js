@@ -1,4 +1,3 @@
-//frontend/src/pages/Homepage.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -47,6 +46,10 @@ function HomePage() {
   const uniqueSafariTypes = [
     ...new Set(
       safaris.map((safari) => {
+        // Add null check for safariType
+        if (!safari || !safari.safariType) {
+          return "Unknown";
+        }
         const normalized = safari.safariType.toLowerCase().trim();
         return normalized.charAt(0).toUpperCase() + normalized.slice(1);
       })
@@ -95,9 +98,10 @@ function HomePage() {
   useEffect(() => {
     const fetchSafarisAndLocations = async () => {
       try {
-        const response = await axios.get("http://localhost:YOUR_PORT_HERE/safaris"); // Replace YOUR_PORT_HERE
+        const response = await axios.get("http://localhost:8070/safaris");
+        // Only show active safaris that have been approved by admin
         const verifiedSafaris = response.data
-          .filter((safari) => safari.isVerified && !safari.isBooked)
+          .filter((safari) => safari.status === 'active')
           .map((safari) => ({
             ...safari,
             image: imageMap[safari.imageName] || safari1,
@@ -168,6 +172,7 @@ function HomePage() {
           <a href="/" className="text-white text-2xl font-extrabold">LOGO</a>
           <div className="hidden md:flex items-center space-x-6">
             <a href="/allListings" className="text-white hover:text-blue-200 transition-colors">Safaris</a>
+            <a href="/explore-safaris" className="text-white hover:text-blue-200 transition-colors">Explore Safaris</a>
             <div className="relative dropdown-container">
               <button
                 className="text-white hover:text-blue-200 flex items-center"
@@ -298,6 +303,22 @@ function HomePage() {
           </p>
         </div>
       </section>
+
+      {/* Registration Section */}
+      <div className="register-options text-center py-10 bg-blue-50">
+        <h2 className="text-3xl font-bold text-blue-800 mb-4">Join SafariGo Today</h2>
+        <div className="buttons-container">
+          <button 
+            onClick={() => navigate('/RegistrationForm')}
+            className="register-btn primary-btn bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-colors shadow-md"
+          >
+            Register Now
+          </button>
+          <p className="mt-4 text-blue-600">
+            Sign up as a Customer, Guide, or Vehicle Owner and access our full range of services.
+          </p>
+        </div>
+      </div>
 
       {/* Safari List and Filters */}
       <div className="container mx-auto px-4 py-10 bg-blue-50">

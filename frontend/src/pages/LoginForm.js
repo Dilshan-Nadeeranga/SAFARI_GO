@@ -1,6 +1,6 @@
 // frontend/src/pages/LoginForm.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 
 const LoginForm = () => {
@@ -9,6 +9,11 @@ const LoginForm = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Extract redirect information from location.state
+  const redirectTo = location.state?.redirectTo || '';
+  const safariData = location.state?.safari || null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,21 +28,29 @@ const LoginForm = () => {
         localStorage.setItem('role', response.data.role);
         console.log('Role set in localStorage:', localStorage.getItem('role'));
         setSuccessMessage('Login successful! Redirecting...');
+        
+        // Handle redirect with safari data if available
+        if (redirectTo === '/BookSafari' && safariData) {
+          setTimeout(() => navigate('/BookSafari', { state: { safari: safariData } }), 1000);
+          return;
+        }
+        
+        // Default redirects based on role
         switch (response.data.role) {
           case 'user':
-            navigate('/UserHomepage');
+            setTimeout(() => navigate('/UserHomepage'), 1000);
             break;
           case 'guide':
-            navigate('/GuideDashboard');
+            setTimeout(() => navigate('/GuideDashboard'), 1000);
             break;
           case 'vehicle_owner':
-            navigate('/VehicleOwnerDashboard');
+            setTimeout(() => navigate('/VehicleOwnerDashboard'), 1000);
             break;
           case 'admin':
-            navigate('/Dashboard');
+            setTimeout(() => navigate('/Dashboard'), 1000);
             break;
           default:
-            navigate('/');
+            setTimeout(() => navigate('/'), 1000);
         }
       }
     } catch (error) {

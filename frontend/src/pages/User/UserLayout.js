@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+// frontend/src/pages/User/UserLayout.js
+import React from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
-import { FaTachometerAlt, FaSafari, FaDollarSign, FaCog, FaSignOutAlt, FaComments } from "react-icons/fa";
+import { FaTachometerAlt, FaSafari, FaDollarSign, FaCog, FaSignOutAlt, FaCompass, FaTruck } from "react-icons/fa";
 
 const UserLayout = ({ children }) => {
   const navigate = useNavigate();
-  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -34,6 +34,19 @@ const UserLayout = ({ children }) => {
             </li>
             <li>
               <NavLink
+                to="/user/safaris"
+                className={({ isActive }) =>
+                  `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
+                  }`
+                }
+              >
+                <FaCompass />
+                <span>Explore Safaris</span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
                 to="/user/trips"
                 className={({ isActive }) =>
                   `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
@@ -43,6 +56,19 @@ const UserLayout = ({ children }) => {
               >
                 <FaSafari />
                 <span>Trips</span>
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/user/rentals"
+                className={({ isActive }) =>
+                  `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
+                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
+                  }`
+                }
+              >
+                <FaTruck />
+                <span>My Rentals</span>
               </NavLink>
             </li>
             <li>
@@ -57,43 +83,6 @@ const UserLayout = ({ children }) => {
                 <FaDollarSign />
                 <span>Subscriptions</span>
               </NavLink>
-            </li>
-            <li>
-              <div
-                onClick={() => setIsFeedbackOpen(!isFeedbackOpen)}
-                className="flex items-center space-x-2 px-4 py-2 rounded-md text-blue-200 hover:bg-blue-600 cursor-pointer transition-colors"
-              >
-                <FaComments />
-                <span>Feedback</span>
-              </div>
-              {isFeedbackOpen && (
-                <ul className="ml-6 mt-2 space-y-2">
-                  <li>
-                    <NavLink
-                      to="/user/feedback/form"
-                      className={({ isActive }) =>
-                        `block px-4 py-2 rounded-md transition-colors ${
-                          isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
-                        }`
-                      }
-                    >
-                      Feedback Form
-                    </NavLink>
-                  </li>
-                  <li>
-                    <NavLink
-                      to="/user/feedback/inbox"
-                      className={({ isActive }) =>
-                        `block px-4 py-2 rounded-md transition-colors ${
-                          isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
-                        }`
-                      }
-                    >
-                      Inbox
-                    </NavLink>
-                  </li>
-                </ul>
-              )}
             </li>
             <li>
               <NavLink

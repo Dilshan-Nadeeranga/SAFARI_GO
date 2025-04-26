@@ -1,21 +1,57 @@
-// BACKEND/models/Vehicle.js
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const VehicleSchema = new mongoose.Schema({
   ownerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+    ref: 'User',
+    required: true
   },
-  picture: { type: String },
-  type: { type: String, required: true },
-  brand: { type: String, required: true },
-  model: { type: String, required: true },
-  registrationNumber: { type: String, required: true, unique: true },
-  licensePlate: { type: String },
-  seatingCapacity: { type: Number, required: true },
-  luggageCapacity: { type: Number, required: true },
-  numberOfDoors: { type: Number, required: true },
+  type: { 
+    type: String, 
+    required: true 
+  },
+  licensePlate: { 
+    type: String, 
+    required: true, 
+    unique: true 
+  },
+  capacity: { 
+    type: Number, 
+    default: 4 
+  },
+  features: [{ 
+    type: String 
+  }],
+  status: {
+    type: String,
+    enum: ['active', 'maintenance', 'unavailable'],
+    default: 'active'
+  },
+  currentBookingId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Booking',
+    default: null
+  },
+  // Add images field to store multiple image paths
+  images: [{
+    type: String
+  }],
+  // New fields for owner information and documents
+  ownerName: {
+    type: String
+  },
+  contactNumber: {
+    type: String
+  },
+  licenseDoc: {
+    type: String
+  },
+  insuranceDoc: {
+    type: String
+  }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model("Vehicle", VehicleSchema);
+const Vehicle = mongoose.model('Vehicle', VehicleSchema);
+module.exports = Vehicle;

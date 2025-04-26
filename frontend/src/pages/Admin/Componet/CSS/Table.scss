@@ -1,0 +1,101 @@
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 14px;
+  
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+  }
+  
+  tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .user-role {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    
+    &.admin {
+      background-color: #ffeaa7;
+      color: #d35400;
+    }
+    
+    &.user {
+      background-color: #e3f2fd;
+      color: #1565c0;
+    }
+    
+    &.guide {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    &.vehicle_owner {
+      background-color: #f3e5f5;
+      color: #6a1b9a;
+    }
+  }
+  
+  .status {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    
+    &.active {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    &.inactive {
+      background-color: #ffebee;
+      color: #c62828;
+    }
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+    
+    button {
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .view-btn {
+      background-color: #e3f2fd;
+      color: #1565c0;
+      
+      &:hover {
+        background-color: #bbdefb;
+      }
+    }
+    
+    .edit-btn {
+      background-color: #fff3e0;
+      color: #e65100;
+      
+      &:hover {
+        background-color: #ffe0b2;
+      }
+    }
+  }
+}
+
+.text-center {
+  text-align: center;
+}

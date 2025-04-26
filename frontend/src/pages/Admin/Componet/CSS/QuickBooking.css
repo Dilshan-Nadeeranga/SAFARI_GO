@@ -1,0 +1,41 @@
+.quick-booking-modal {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.quick-booking-content {
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.quick-booking-btn .icon {
+  color: #7451f8;
+}
+
+.quick-booking-btn {
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.quick-booking-btn:hover {
+  background-color: rgba(116, 81, 248, 0.1);
+  transform: translateX(2px);
+}

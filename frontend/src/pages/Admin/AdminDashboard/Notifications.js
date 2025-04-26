@@ -1,4 +1,3 @@
-//frontend/src/pages/Admin/AdminDashboard/Notifications.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../AdminDashboard/Dashboard.css'; // Adjust CSS as needed

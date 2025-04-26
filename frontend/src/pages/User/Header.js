@@ -1,6 +1,7 @@
 // frontend/src/pages/User/Header.js
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
 import defprofile from "../../Componets/assets/default-profile.png";
 
 const Header = ({ user }) => {
@@ -8,6 +9,8 @@ const Header = ({ user }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const timeoutRef = useRef(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [premiumUntil, setPremiumUntil] = useState(null);
 
   // Open dropdown on mouse enter
   const handleMouseEnter = () => {
@@ -33,6 +36,27 @@ const Header = ({ user }) => {
     };
   }, []);
 
+  // Check premium status when component mounts
+  useEffect(() => {
+    const checkPremiumStatus = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await axios.get("http://localhost:8070/users/premium/status", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        setIsPremium(response.data.isPremium);
+        setPremiumUntil(response.data.premiumUntil);
+      } catch (error) {
+        console.error("Error checking premium status:", error);
+      }
+    };
+
+    checkPremiumStatus();
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
@@ -49,6 +73,10 @@ const Header = ({ user }) => {
           <a href="/activities" className="hover:text-blue-200 transition-colors">Activities</a>
           <a href="/about" className="hover:text-blue-200 transition-colors">About</a>
           <a href="/contact" className="hover:text-blue-200 transition-colors">Contact</a>
+          <Link to="/user/subscriptions" className="hover:text-blue-200 transition-colors flex items-center">
+            <span className="mr-1">✨</span> Premium 
+            {isPremium && <span className="ml-1 px-2 py-0.5 bg-yellow-300 text-blue-800 text-xs rounded-full">ACTIVE</span>}
+          </Link>
         </nav>
         <div
           className="relative"
@@ -72,7 +100,14 @@ const Header = ({ user }) => {
                 />
               )}
             </div>
-            <span className="text-white">{user ? user.name : "Guest"}</span>
+            <span className="text-white flex items-center">
+              {user ? user.name : "Guest"}
+              {isPremium && (
+                <span className="ml-2 bg-yellow-300 text-xs px-1.5 py-0.5 rounded-full text-blue-800 font-bold">
+                  PREMIUM
+                </span>
+              )}
+            </span>
           </div>
           <ul
             className={`absolute right-0 bg-white shadow-lg rounded-md mt-2 z-10 w-48 transition-opacity duration-200 ${
@@ -88,7 +123,14 @@ const Header = ({ user }) => {
               <a href="/user/trips" className="block px-4 py-2 text-gray-800 hover:bg-blue-100">Trips</a>
             </li>
             <li>
-              <a href="/user/subscriptions" className="block px-4 py-2 text-gray-800 hover:bg-blue-100">Subscriptions</a>
+              <Link to="/user/subscriptions" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 flex items-center justify-between">
+                Premium Plans
+                {isPremium ? (
+                  <span className="bg-green-100 text-green-800 text-xs px-1 py-0.5 rounded-full">Active</span>
+                ) : (
+                  <span className="bg-yellow-100 text-yellow-800 text-xs px-1 py-0.5 rounded-full">Upgrade</span>
+                )}
+              </Link>
             </li>
             <li>
               <a href="/user/settings" className="block px-4 py-2 text-gray-800 hover:bg-blue-100">Settings</a>
@@ -102,6 +144,26 @@ const Header = ({ user }) => {
               </button>
             </li>
           </ul>
+        </div>
+      </div>
+      <div className="bg-white shadow-md p-4">
+        <div className="container mx-auto flex justify-between items-center">
+          <h1 className="text-xl font-semibold text-gray-800">Safari Explorer</h1>
+          <div className="flex items-center space-x-4">
+            {isPremium ? (
+              <div className="px-4 py-1.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-md flex items-center">
+                <span className="mr-1">✨</span> Premium Active
+                <span className="ml-2 text-xs bg-white text-purple-700 px-1.5 py-0.5 rounded-full font-bold">15% OFF</span>
+              </div>
+            ) : (
+              <Link 
+                to="/user/subscriptions" 
+                className="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-md hover:from-purple-600 hover:to-indigo-700 transition-all flex items-center"
+              >
+                <span className="mr-1">✨</span> Upgrade to Premium
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </header>

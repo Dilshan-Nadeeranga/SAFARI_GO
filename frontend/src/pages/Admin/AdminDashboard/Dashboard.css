@@ -51,4 +51,113 @@
     background: #f4f4f4;
   }
 
+/* User list styles */
+.users-list {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+.users-list h2 {
+  margin-bottom: 20px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.users-list table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 100%;
+}
+
+.users-list th, .users-list td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.users-list th {
+  background-color: #f8f8f8;
+  font-weight: 600;
+  color: #333;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.users-list tr:hover {
+  background-color: #f9f9f9;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.view-btn, .edit-btn {
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  border: none;
+}
+
+.view-btn {
+  background-color: #3498db;
+  color: white;
+}
+
+.edit-btn {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status.active {
+  background-color: #d4f9e2;
+  color: #1d9f5f;
+}
+
+.status.inactive {
+  background-color: #feecec;
+  color: #e74c3c;
+}
+
+/* Additional user list table enhancements */
+.users-list .overflow-x-auto {
+  overflow-x: auto;
+}
+
+.users-list td:first-child {
+  font-family: monospace; /* Better for displaying IDs */
+  font-size: 0.85rem;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Add hover effect to rows */
+.users-list tbody tr:hover {
+  background-color: #f0f7ff;
+  transition: background-color 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+
 
