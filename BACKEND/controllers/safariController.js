@@ -1,3 +1,4 @@
+//Backend/controllers/safariController.js
 const Safari = require('../models/Safari');
 const Notification = require('../models/Notification');
 
