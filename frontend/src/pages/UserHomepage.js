@@ -1,4 +1,5 @@
 // frontend/src/pages/UserHomepage.js
+// Update Homepage
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
