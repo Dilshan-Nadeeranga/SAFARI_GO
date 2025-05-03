@@ -1,0 +1,22 @@
+.register-container {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  background-color: #f3f4f6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .register-container {
+    padding: 1rem;
+  }
+}
+
+/* Animation for success message */
+.bg-green-100 {
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

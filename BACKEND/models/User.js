@@ -19,6 +19,32 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'guide', 'vehicle_owner', 'admin'],
     required: true,
   },
+  isPremium: {
+    type: Boolean,
+    default: false,
+  },
+  premiumUntil: {
+    type: Date,
+    default: null,
+  },
+  premiumPlan: {
+    type: String,
+    enum: ['bronze', 'silver', 'gold', null],
+    default: null
+  },
+  discountRate: {
+    type: Number,
+    default: 0
+  },
+  subscriptionHistory: [{
+    plan: String,
+    purchasedAt: {
+      type: Date,
+      default: Date.now
+    },
+    expiresAt: Date,
+    amount: Number
+  }]
 });
 
 UserSchema.pre('save', async function (next) {

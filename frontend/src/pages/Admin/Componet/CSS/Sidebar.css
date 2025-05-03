@@ -89,3 +89,32 @@
         }
     }
 }
+
+.quick-booking-btn {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  color: #333;
+  transition: all 0.3s;
+}
+
+.quick-booking-btn:hover {
+  background-color: #ece8ff;
+  border-radius: 5px;
+  color: #7451f8;
+}
+
+.quick-booking-btn span {
+  font-size: 13px;
+  font-weight: 600;
+  margin-left: 10px;
+}
+
+.quick-booking-btn .icon {
+  font-size: 18px;
+}
