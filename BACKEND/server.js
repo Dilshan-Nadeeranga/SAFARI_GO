@@ -73,6 +73,8 @@ function listRoutes() {
   console.log('=========================\n');
 }
 
+
+
 // Routes - make sure they're loaded in the right order
 // Load user routes first as they have authentication
 const userRoutes = require('./routes/userRoutes');
@@ -82,6 +84,8 @@ const adminRoutes = require('./routes/adminRoutes');
 const adminUserRoutes = require('./routes/adminUserRoutes'); // Add this line
 const vehicleRoutes = require('./routes/vehicleRoutes');
 const vehicleRentalRoutes = require('./routes/vehicleRentalRoutes'); // Add this import
+const aiSafariRoutes = require('./routes/AISafariRoutes');
+
 
 // Make sure the routes are registered in the correct order
 app.use('/users', userRoutes);
@@ -124,6 +128,8 @@ app.use('/safaris', safariRoutes); // Add this line
 console.log('Safari routes registered');
 app.use('/vehicle-rentals', vehicleRentalRoutes); // Add this line
 console.log('Vehicle rental routes registered');
+app.use("/api/ai-safari", aiSafariRoutes); // Add AI Safari endpoint
+console.log("AI Safari routes registered");
 
 // Debug: Print all routes after they are registered
 console.log("\n=== Checking for premium subscriber routes ===");

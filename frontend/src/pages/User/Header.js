@@ -1,4 +1,3 @@
-// frontend/src/pages/User/Header.js
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
@@ -71,6 +70,7 @@ const Header = ({ user }) => {
           <a href="/UserHomepage" className="hover:text-blue-200 transition-colors">Home</a>
           <a href="/discover" className="hover:text-blue-200 transition-colors">Discover</a>
           <a href="/activities" className="hover:text-blue-200 transition-colors">Activities</a>
+          <a href="/user/planner" className="hover:text-blue-200 transition-colors">AI Trip Planner</a>
           <a href="/about" className="hover:text-blue-200 transition-colors">About</a>
           <a href="/contact" className="hover:text-blue-200 transition-colors">Contact</a>
           <Link to="/user/subscriptions" className="hover:text-blue-200 transition-colors flex items-center">
@@ -121,6 +121,9 @@ const Header = ({ user }) => {
             </li>
             <li>
               <a href="/user/trips" className="block px-4 py-2 text-gray-800 hover:bg-blue-100">Trips</a>
+            </li>
+            <li>
+              <a href="/user/planner" className="block px-4 py-2 text-gray-800 hover:bg-blue-100">AI Trip Planner</a>
             </li>
             <li>
               <Link to="/user/subscriptions" className="block px-4 py-2 text-gray-800 hover:bg-blue-100 flex items-center justify-between">

@@ -22,6 +22,8 @@ import VehicleDetails from './pages/Vehicle/VehicleDetails'; // Add this import
 import RentVehicle from './pages/Vehicle/RentVehicle'; // Add this import
 import UserRentals from './pages/User/UserRentals'; // Add this import
 
+import SafariPlanner from './pages/User/SafariPlanner.js';
+
 // Admin
 import Dashboard from './pages/Admin/AdminDashboard/Dashboard.jsx';
 import UsersList from './pages/Admin/List/UsersList';
@@ -55,6 +57,9 @@ function App() {
       <div className="App">
         <ToastContainer position="top-right" autoClose={5000} /> {/* Add this component */}
         <Routes>
+
+        
+          
           <Route path="/RegistrationForm" element={<RegistrationForm />} />
           <Route path="/" element={<Homepage />} />
           <Route path="/LoginForm" element={<LoginForm />} /> {/* Add this missing route */}
@@ -77,6 +82,7 @@ function App() {
             <Route path="settings" element={<UserSettings />} />
             <Route path="safaris" element={<UserSafaris />} />
             <Route path="feedback" element={<UserFeedback />} /> {/* Add this new route */}
+            <Route path="planner" element={<SafariPlanner/>} />
           </Route>
           
           {/* Admin */}
