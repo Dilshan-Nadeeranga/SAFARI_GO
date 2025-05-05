@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
@@ -12,6 +11,9 @@ const UserHomepage = () => {
   const navigate = useNavigate();
   const [featuredTours, setFeaturedTours] = useState([]);
   const [loadingTours, setLoadingTours] = useState(false);
+  const [priceFilter, setPriceFilter] = useState("");
+  const [availabilityFilter, setAvailabilityFilter] = useState("In Stock");
+  const [tourNameFilter, setTourNameFilter] = useState("");
 
   useEffect(() => {
     const role = localStorage.getItem('role');
@@ -66,6 +68,28 @@ const UserHomepage = () => {
 
   const navigateToExploreVehicles = () => {
     navigate('/vehicles');
+  };
+
+  const handleApplyFilters = async () => {
+    try {
+      setLoadingTours(true);
+      const params = {};
+      if (priceFilter) params.price = priceFilter;
+      if (availabilityFilter) params.availability = availabilityFilter;
+      if (tourNameFilter) params.title = tourNameFilter;
+
+      const response = await axios.get('http://localhost:8070/safaris?limit=3', { params });
+      setFeaturedTours(response.data);
+      setLoadingTours(false);
+    } catch (error) {
+      console.error('Error applying filters:', error);
+      setLoadingTours(false);
+    }
+  };
+
+  const handleAdaptFilters = () => {
+    // Placeholder for adapting filters (e.g., showing more filter options)
+    console.log("Adapting filters...");
   };
 
   return (
@@ -172,18 +196,56 @@ const UserHomepage = () => {
         </div>
       </section>
 
-      {/* Plan Your Trip Section */}
+      {/* Plan Your Trip Section with Filter Bar */}
       <aside className="container mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold text-gray-800 mb-6">Plan Your Perfect Trip</h2>
-        <div className="max-w-sm">
-          <select
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
-          >
-            <option>Date</option>
-            <option>Price Low To High</option>
-            <option>Price High To Low</option>
-            <option>Name (A-Z)</option>
-          </select>
+        <div className="flex flex-col md:flex-row items-center gap-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Price per Person</label>
+            <input
+              type="number"
+              value={priceFilter}
+              onChange={(e) => setPriceFilter(e.target.value)}
+              placeholder="Enter price"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Availability</label>
+            <select
+              value={availabilityFilter}
+              onChange={(e) => setAvailabilityFilter(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700"
+            >
+              <option>In Stock</option>
+              <option>Upcoming</option>
+              <option>Sold Out</option>
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tour Name</label>
+            <input
+              type="text"
+              value={tourNameFilter}
+              onChange={(e) => setTourNameFilter(e.target.value)}
+              placeholder="Enter tour name"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+            />
+          </div>
+          <div className="flex items-end gap-3">
+            <button
+              onClick={handleAdaptFilters}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold"
+            >
+              Adapt Filters
+            </button>
+            <button
+              onClick={handleApplyFilters}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            >
+              Go
+            </button>
+          </div>
         </div>
       </aside>
 
