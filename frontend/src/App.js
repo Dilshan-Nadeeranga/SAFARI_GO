@@ -31,6 +31,7 @@ import UserEdit from './pages/Admin/Edit/UserEdit'; // Add this new import
 import GuidesList from './pages/Admin/List/GuidesList';
 import VehicleOwnersList from './pages/Admin/List/VehicleOwnersList';
 import AdminVehiclesList from './pages/Admin/List/AdminVehiclesList';
+import AdminPackagesList from './pages/Admin/List/AdminPackagesList';  // Add this import
 import AdminNotifications from './pages/Admin/Notifications/AdminNotifications';
 import AdminBookingHistory from './pages/Admin/Reports/AdminBookingHistory';
 import AdminBookingHistoryRevenueFix from './pages/Admin/Reports/AdminBookingHistoryRevenueFix'; // Add this import
@@ -92,6 +93,7 @@ function App() {
           <Route path='/admin/guides' element={<GuidesList />} />
           <Route path='/admin/vehicle-owners' element={<VehicleOwnersList />} />
           <Route path='/admin/vehicles' element={<AdminVehiclesList />} />
+          <Route path='/admin/packages' element={<AdminPackagesList />} /> {/* Add this new route */}
           <Route path='/admin/notifications' element={<AdminNotifications />} />
           <Route path='/admin/booking-history' element={<AdminBookingHistory />} />
           <Route path='/admin/booking-revenue' element={<AdminBookingHistoryRevenueFix />} /> {/* Add this new route */}

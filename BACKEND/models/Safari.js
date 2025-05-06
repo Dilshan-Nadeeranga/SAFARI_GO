@@ -36,8 +36,12 @@ const SafariSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'approved', 'rejected'],
-    default: 'pending'
+    enum: ['pending_approval', 'active', 'inactive'],
+    default: 'pending_approval'
+  },
+  adminFeedback: {
+    type: String,
+    default: ''
   },
   createdAt: {
     type: Date,
@@ -51,12 +55,5 @@ const SafariSchema = new mongoose.Schema({
 SafariSchema.index({ guideId: 1 });
 SafariSchema.index({ status: 1 });
 
-// Make sure we have only one model definition
-let Safari;
-try {
-  Safari = mongoose.model('Safari');
-} catch (e) {
-  Safari = mongoose.model('Safari', SafariSchema);
-}
-
+const Safari = mongoose.model('Safari', SafariSchema);
 module.exports = Safari;
