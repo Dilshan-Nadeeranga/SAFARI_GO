@@ -22,17 +22,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// Improve CORS configuration
+// CORS Configuration
 app.use(cors({
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"]
+  origin: 'http://localhost:3000', // Your frontend URL
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
 
-// Important: bodyParser must come before route handlers
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from uploads and public directories
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

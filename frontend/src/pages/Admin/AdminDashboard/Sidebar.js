@@ -53,7 +53,7 @@ const Sidebar = () => {
                         <span>Vehicle Monitoring</span>
                     </li>
                     <p className="titlee">SERVICE</p>
-                    <li>
+                    <li onClick={() => navigate('/admin/packages')}>
                         <ForestIcon className="icon"/>
                         <span>Packages</span>
                     </li>

@@ -18,6 +18,11 @@ const QuickBooking = ({ show, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [dateAvailability, setDateAvailability] = useState({
+    checked: false,
+    available: true,
+    checking: false
+  });
 
   useEffect(() => {
     // Fetch available safaris for the dropdown
@@ -50,9 +55,48 @@ const QuickBooking = ({ show, onClose }) => {
     }
   }, [show]);
 
+  const checkDateAvailability = async (safariId, date) => {
+    if (!safariId || !date) return;
+    
+    setDateAvailability(prev => ({ ...prev, checking: true }));
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(
+        `http://localhost:8070/bookings/check-availability/${safariId}/${date}`,
+        { headers: { Authorization: `Bearer ${token}` }}
+      );
+      
+      setDateAvailability({
+        checked: true,
+        available: response.data.isAvailable,
+        checking: false
+      });
+      
+      if (!response.data.isAvailable) {
+        setError('This safari is already booked for the selected date. Please choose another date.');
+      } else if (error === 'This safari is already booked for the selected date. Please choose another date.') {
+        setError(null);
+      }
+    } catch (err) {
+      console.error('Error checking date availability:', err);
+      setDateAvailability({
+        checked: true,
+        available: true, // Assume available on error to not block user
+        checking: false
+      });
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Check availability when date or safari changes
+    if (name === 'date' && formData.safariId) {
+      checkDateAvailability(formData.safariId, value);
+    } else if (name === 'safariId' && formData.date) {
+      checkDateAvailability(value, formData.date);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -60,6 +104,11 @@ const QuickBooking = ({ show, onClose }) => {
     
     if (!formData.safariId || !formData.Fname || !formData.email || !formData.date) {
       setError('Please fill in all required fields');
+      return;
+    }
+    
+    if (!dateAvailability.available && dateAvailability.checked) {
+      setError('This safari is already booked for the selected date. Please choose another date.');
       return;
     }
     
@@ -212,10 +261,23 @@ const QuickBooking = ({ show, onClose }) => {
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
-                className="shadow border rounded w-full py-2 px-3 text-gray-700"
+                className={`shadow border rounded w-full py-2 px-3 text-gray-700 ${
+                  !dateAvailability.available && dateAvailability.checked ? 'border-red-500 bg-red-50' : ''
+                }`}
                 min={new Date().toISOString().split('T')[0]}
                 required
               />
+              {dateAvailability.checking && (
+                <p className="text-xs text-gray-500 mt-1">Checking availability...</p>
+              )}
+              {!dateAvailability.available && dateAvailability.checked && (
+                <p className="text-xs text-red-500 mt-1">
+                  Date unavailable. Safari is already booked for this date.
+                </p>
+              )}
+              {dateAvailability.available && dateAvailability.checked && formData.date && (
+                <p className="text-xs text-green-500 mt-1">Date available!</p>
+              )}
             </div>
             
             <div className="mb-4">

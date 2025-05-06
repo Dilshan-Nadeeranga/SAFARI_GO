@@ -8,6 +8,28 @@ const { auth, authorize } = require('../middleware/auth');
 router.post('/add', auth, authorize(['user']), async (req, res) => {
   try {
     const { safariId, Fname, Lname, Phonenumber1, email, date, numberOfPeople, amount, status } = req.body;
+    
+    // Check if this safari is already booked for the given date
+    const bookingDate = new Date(date);
+    const startOfDay = new Date(bookingDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(bookingDate.setHours(23, 59, 59, 999));
+    
+    const existingBooking = await Booking.findOne({
+      safariId,
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      },
+      // Only consider confirmed or pending_payment bookings
+      status: { $in: ['confirmed', 'pending_payment'] }
+    });
+
+    if (existingBooking) {
+      return res.status(400).json({ 
+        error: 'This safari is already booked for the selected date. Please choose another date.' 
+      });
+    }
+    
     const newBooking = new Booking({
       userId: req.user.id,
       safariId,
@@ -256,6 +278,32 @@ router.get('/:id', auth, async (req, res) => {
   } catch (error) {
     console.error('Error fetching booking details:', error);
     res.status(500).json({ error: 'Error fetching booking details' });
+  }
+});
+
+// Add this new route after existing routes
+router.get('/check-availability/:safariId/:date', auth, async (req, res) => {
+  try {
+    const { safariId, date } = req.params;
+    
+    // Convert the date string to a Date object
+    const bookingDate = new Date(date);
+    const startOfDay = new Date(bookingDate.setHours(0, 0, 0, 0));
+    const endOfDay = new Date(bookingDate.setHours(23, 59, 59, 999));
+    
+    const existingBooking = await Booking.findOne({
+      safariId,
+      date: {
+        $gte: startOfDay,
+        $lte: endOfDay
+      },
+      status: { $in: ['confirmed', 'pending_payment'] }
+    });
+    
+    res.json({ isAvailable: !existingBooking });
+  } catch (err) {
+    console.error('Error checking safari availability:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 

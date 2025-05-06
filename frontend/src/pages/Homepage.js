@@ -110,7 +110,7 @@ function HomePage() {
         setFilteredSafaris(verifiedSafaris);
 
         const uniqueLocations = [
-          ...new Set(verifiedSafaris.map((safari) => safari.safariLocation)),
+          ...new Set(verifiedSafaris.map((safari) => safari.location))
         ];
         setLocations(uniqueLocations);
 
@@ -136,7 +136,7 @@ function HomePage() {
           : true;
 
       const isLocationValid = locationFilter
-        ? safari.safariLocation.toLowerCase().startsWith(locationFilter.toLowerCase())
+        ? safari.location.toLowerCase().startsWith(locationFilter.toLowerCase())
         : true;
 
       const isSafariTypeValid = safariTypeFilter
@@ -339,7 +339,7 @@ function HomePage() {
               ))}
             </select>
           </div>
-          <div className="w-full md:w-80">
+          {/* <div className="w-full md:w-80">
             <label htmlFor="safariType" className="block text-sm font-medium text-blue-700 mb-1">Safari Type</label>
             <select
               id="safariType"
@@ -354,7 +354,7 @@ function HomePage() {
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
           <div className="w-full md:w-80">
             <label htmlFor="priceRange" className="block text-sm font-medium text-blue-700 mb-1">Price Range</label>
             <select

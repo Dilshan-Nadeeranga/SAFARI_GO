@@ -1,4 +1,3 @@
-//Backend/controllers/safariController.js
 const Safari = require('../models/Safari');
 const Notification = require('../models/Notification');
 
@@ -67,9 +66,30 @@ exports.createSafari = async (req, res) => {
 // Get all safari packages
 exports.getAllSafaris = async (req, res) => {
   try {
-    const safaris = await Safari.find()
+    const { limit, status } = req.query;
+    
+    // Build query object
+    const query = {};
+    
+    // Add status filter if provided, default to 'active' for public endpoints
+    if (status) {
+      query.status = status;
+    } else {
+      query.status = 'active'; // Default filter for public endpoints
+    }
+    
+    // Create base query
+    let safariQuery = Safari.find(query)
       .populate('guideId', 'name email')
       .sort({ createdAt: -1 });
+    
+    // Apply limit if provided
+    if (limit) {
+      safariQuery = safariQuery.limit(parseInt(limit));
+    }
+    
+    // Execute query
+    const safaris = await safariQuery;
 
     res.status(200).json(safaris);
   } catch (error) {
@@ -213,21 +233,38 @@ exports.getGuideSafaris = async (req, res) => {
 exports.updateSafariStatus = async (req, res) => {
   try {
     const { status } = req.body;
+    console.log(`Updating safari ${req.params.id} status to: ${status}`);
 
     // Validate status
     if (!['active', 'inactive'].includes(status)) {
-      return res.status(400).json({ message: 'Invalid status value' });
+      return res.status(400).json({ message: 'Invalid status value. Must be "active" or "inactive".' });
     }
 
+    // Check if safari exists before updating
+    const existingSafari = await Safari.findById(req.params.id);
+    if (!existingSafari) {
+      return res.status(404).json({ message: `Safari package with ID ${req.params.id} not found` });
+    }
+
+    // Update the safari
     const safari = await Safari.findByIdAndUpdate(
       req.params.id,
-      { status },
-      { new: true }
+      { 
+        status,
+        adminFeedback: status === 'active' ? 'Approved by admin' : 'Deactivated by admin' 
+      },
+      { new: true, runValidators: true }
     );
 
-    if (!safari) {
-      return res.status(404).json({ message: 'Safari package not found' });
-    }
+    // Notify guide about status change
+    const notification = new Notification({
+      type: status === 'active' ? 'SAFARI_APPROVED' : 'SAFARI_REJECTED',
+      message: `Your safari package "${safari.title}" has been ${status === 'active' ? 'approved' : 'deactivated'}`,
+      details: { safariId: safari._id },
+      recipientId: safari.guideId,
+      recipientRole: 'guide'
+    });
+    await notification.save();
 
     res.status(200).json({
       message: `Safari package ${status === 'active' ? 'approved' : 'rejected'}`,
@@ -235,7 +272,10 @@ exports.updateSafariStatus = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating safari status:', error);
-    res.status(500).json({ error: 'Failed to update safari status' });
+    res.status(500).json({ 
+      error: 'Failed to update safari status',
+      details: error.message
+    });
   }
 };
 
