@@ -16,11 +16,23 @@ import UserSettings from "./pages/User/UserSettings.js";
 import UserSafaris from './pages/User/UserSafaris';
 import PublicSafaris from './pages/PublicSafaris';
 import BookSafari from './pages/BookSafari';
+
 import UserFeedback from './pages/User/UserFeedback';
 import AllVehicles from './pages/Vehicle/AllVehicles';
 import VehicleDetails from './pages/Vehicle/VehicleDetails';
 import RentVehicle from './pages/Vehicle/RentVehicle';
 import UserRentals from './pages/User/UserRentals';
+
+import UserFeedback from './pages/User/UserFeedback'; // Add this new import
+import AllVehicles from './pages/Vehicle/AllVehicles'; // Add this import
+import VehicleDetails from './pages/Vehicle/VehicleDetails'; // Add this import
+import RentVehicle from './pages/Vehicle/RentVehicle'; // Add this import
+import UserRentals from './pages/User/UserRentals'; // Add this import
+
+import AboutUs from './pages/AboutUs/About.js';// Add this import 
+import Contact from './pages/ContactUs/Contact.js'; // Add this import
+
+
 import SafariPlanner from './pages/User/SafariPlanner.js';
 import Blog from './pages/Blog/blog.js'; // Add this import
 // Admin
@@ -64,8 +76,14 @@ function App() {
           <Route path="/UserProfile" element={<UserProfile />} />
           <Route path="/explore-safaris" element={<PublicSafaris />} />
           <Route path="/BookSafari" element={<BookSafari />} />
+
            
           <Route path="/blog" element={<Blog />} /> {/* Updated to /blog */}
+
+          <Route path="/about" element={<AboutUs />} /> {/* Updated to /about */}
+          <Route path="/contact" element={<Contact />} /> {/* Updated to /contact */}
+          
+
           <Route path="/vehicles" element={<AllVehicles />} />
           <Route path="/vehicles/:id" element={<VehicleDetails />} />
           <Route path="/rent-vehicle" element={<RentVehicle />} />
