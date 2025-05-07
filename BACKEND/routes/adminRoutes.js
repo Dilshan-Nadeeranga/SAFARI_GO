@@ -10,7 +10,7 @@ const Vehicle = require('../models/Vehicle'); // Add this to fix Vehicle model r
 
 const router = express.Router();
 
-// Admin dashboard stats
+// Admin dashboard stats (unchanged)
 router.get('/stats', auth, authorize(['admin']), async (req, res) => {
   try {
     // User stats
@@ -76,7 +76,175 @@ router.get('/stats', auth, authorize(['admin']), async (req, res) => {
   }
 });
 
-// Add a specific endpoint for premium subscribers in admin routes as a backup
+// Modified premium users PDF report download endpoint
+router.get('/premium-users/report', auth, authorize(['admin']), async (req, res) => {
+  try {
+    console.log('Generating premium users PDF report');
+    
+    const { plan } = req.query; // Get plan filter from query params
+    const validPlans = ['gold', 'silver', 'bronze'];
+    
+    // Build query
+    const now = new Date();
+    const query = {
+      isPremium: true,
+      premiumUntil: { $gt: now },
+      role: 'user'
+    };
+    
+    if (plan && validPlans.includes(plan.toLowerCase())) {
+      query.premiumPlan = plan.toLowerCase();
+    }
+    
+    // Get premium users
+    const premiumUsers = await User.find(query)
+      .sort({ premiumUntil: -1 })
+      .lean();
+    
+    console.log(`Found ${premiumUsers.length} premium users for report`);
+    
+    // Create a PDF document with enhanced styling
+    const doc = new PDFDocument({
+      margins: { top: 40, bottom: 40, left: 40, right: 40 },
+      size: 'A4',
+      info: {
+        Title: 'Premium Users Report',
+        Author: 'Safari Admin',
+        CreationDate: new Date()
+      }
+    });
+    
+    // Set response headers
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=premium-users-${plan ? plan + '-' : ''}${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    // Pipe PDF to response
+    doc.pipe(res);
+    
+    // Add header with logo placeholder and title
+    doc.rect(0, 0, doc.page.width, 80).fill('#1a2a44');
+    doc.fillColor('white')
+      .font('Helvetica-Bold')
+      .fontSize(20)
+      .text('Premium Users Report', 50, 30)
+      .fontSize(12)
+      .text(new Date().toLocaleDateString(), 50, 55);
+    
+    // Add filter info if applied
+    if (plan) {
+      doc.fillColor('white')
+        .fontSize(12)
+        .text(`Plan: ${plan.charAt(0).toUpperCase() + plan.slice(1)}`, doc.page.width - 150, 55, { align: 'right' });
+    }
+    
+    // Add summary
+    doc.fillColor('black')
+      .fontSize(12)
+      .font('Helvetica')
+      .moveDown(3)
+      .text(`Total Premium Users: ${premiumUsers.length}`, 50)
+      .moveDown(2);
+    
+    if (premiumUsers.length > 0) {
+      // Add table headers
+      const startY = doc.y;
+      doc.font('Helvetica-Bold')
+        .fontSize(10)
+        .fillColor('#1a2a44')
+        .text('User Email', 50, startY, { width: 180 })
+        .text('Name', 230, startY, { width: 100 })
+        .text('Plan', 330, startY, { width: 80 })
+        .text('Discount', 410, startY, { width: 60 })
+        .text('Expires On', 470, startY, { width: 100 });
+      
+      // Draw header underline
+      doc.moveTo(50, startY + 15)
+        .lineTo(doc.page.width - 50, startY + 15)
+        .lineWidth(2)
+        .strokeColor('#1a2a44')
+        .stroke();
+      
+      // Add user data rows
+      doc.font('Helvetica')
+        .fontSize(9);
+      
+      premiumUsers.forEach((user, i) => {
+        // Check for new page
+        if (doc.y > doc.page.height - 100) {
+          doc.addPage();
+          // Re-add header on new page
+          const newY = 50;
+          doc.font('Helvetica-Bold')
+            .fontSize(10)
+            .fillColor('#1a2a44')
+            .text('User Email', 50, newY, { width: 180 })
+            .text('Name', 230, newY, { width: 100 })
+            .text('Plan', 330, newY, { width: 80 })
+            .text('Discount', 410, newY, { width: 60 })
+            .text('Expires On', 470, newY, { width: 100 });
+          
+          doc.moveTo(50, newY + 15)
+            .lineTo(doc.page.width - 50, newY + 15)
+            .lineWidth(2)
+            .strokeColor('#1a2a44')
+            .stroke();
+          doc.font('Helvetica')
+            .fontSize(9);
+        }
+        
+        // Add row background
+        if (i % 2 === 0) {
+          doc.rect(50, doc.y - 5, doc.page.width - 100, 20)
+            .fill('#f5f7fa')
+            .fillColor('black');
+        }
+        
+        const rowY = doc.y;
+        const expiryDate = new Date(user.premiumUntil).toLocaleDateString();
+        const planName = (user.premiumPlan || 'standard').charAt(0).toUpperCase() + (user.premiumPlan || 'standard').slice(1);
+        
+        doc.fillColor('#333')
+          .text(user.email || 'N/A', 50, rowY, { width: 180 })
+          .text(user.name || 'N/A', 230, rowY, { width: 100 })
+          .text(planName, 330, rowY, { width: 80 })
+          .text(`${user.discountRate || 0}%`, 410, rowY, { width: 60 })
+          .text(expiryDate, 470, rowY, { width: 100 })
+          .moveDown(0.5);
+      });
+    } else {
+      doc.font('Helvetica')
+        .fontSize(12)
+        .fillColor('#666')
+        .text('No premium users found for the selected criteria.', 50, doc.y, { align: 'center' })
+        .moveDown();
+    }
+    
+    // Add footer with page numbers
+    const range = doc.bufferedPageRange();
+    for (let i = 0; i < range.count; i++) {
+      doc.switchToPage(i);
+      doc.rect(0, doc.page.height - 40, doc.page.width, 40).fill('#1a2a44');
+      doc.fillColor('white')
+        .fontSize(10)
+        .font('Helvetica')
+        .text(
+          `Page ${i + 1} of ${range.count}`,
+          50,
+          doc.page.height - 30,
+          { align: 'center' }
+        );
+    }
+    
+    // Finalize PDF
+    doc.end();
+    console.log('Premium users PDF report generated successfully');
+  } catch (error) {
+    console.error('Error generating premium users PDF report:', error);
+    res.status(500).json({ error: 'Failed to generate premium users report' });
+  }
+});
+
+// Other routes remain unchanged
 router.get('/premium-subscribers', auth, authorize(['admin']), async (req, res) => {
   try {
     const now = new Date();
@@ -211,131 +379,6 @@ router.get('/users/test-delete/:userId', auth, authorize(['admin']), async (req,
   }
 });
 
-// Add a premium users PDF report download endpoint
-router.get('/premium-users/report', auth, authorize(['admin']), async (req, res) => {
-  try {
-    console.log('Generating premium users PDF report');
-    
-    // Get current date for active premium users
-    const now = new Date();
-    
-    // Get all premium users
-    const premiumUsers = await User.find({
-      isPremium: true,
-      premiumUntil: { $gt: now }
-    }).sort({ premiumUntil: -1 }).lean();
-    
-    console.log(`Found ${premiumUsers.length} premium users for report`);
-    
-    // Create a PDF document
-    const doc = new PDFDocument({
-      margins: { top: 50, bottom: 50, left: 50, right: 50 },
-      size: 'A4'
-    });
-    
-    // Set response headers for PDF download
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=premium-users-${new Date().toISOString().split('T')[0]}.pdf`);
-    
-    // Pipe the PDF directly to the response
-    doc.pipe(res);
-    
-    // Add document title and metadata
-    doc.font('Helvetica-Bold')
-      .fontSize(18)
-      .text('Premium Users Report', { align: 'center' })
-      .moveDown();
-      
-    // Add report generation info
-    doc.fontSize(12)
-      .font('Helvetica')
-      .text(`Generated: ${new Date().toLocaleString()}`)
-      .text(`Total Premium Users: ${premiumUsers.length}`)
-      .moveDown(2);
-    
-    // Add table headers
-    const startY = doc.y;
-    doc.font('Helvetica-Bold')
-      .fontSize(12)
-      .text('User Email', 50, startY, { width: 200 })
-      .text('Plan', 250, startY, { width: 80 })
-      .text('Discount', 330, startY, { width: 80 })
-      .text('Expires On', 410, startY, { width: 130 })
-      .moveDown();
-    
-    // Draw a line under headers
-    doc.moveTo(50, doc.y)
-      .lineTo(540, doc.y)
-      .stroke();
-    doc.moveDown(0.5);
-    
-    // Add user data rows
-    doc.font('Helvetica');
-    
-    premiumUsers.forEach((user, i) => {
-      // Check if we need a new page
-      if (doc.y > 700) {
-        doc.addPage();
-        
-        // Add headers on new page
-        const headerY = 50;
-        doc.font('Helvetica-Bold')
-          .text('User Email', 50, headerY, { width: 200 })
-          .text('Plan', 250, headerY, { width: 80 })
-          .text('Discount', 330, headerY, { width: 80 })
-          .text('Expires On', 410, headerY, { width: 130 })
-          .moveDown();
-        
-        doc.moveTo(50, doc.y)
-          .lineTo(540, doc.y)
-          .stroke();
-        doc.moveDown(0.5);
-        doc.font('Helvetica');
-      }
-      
-      // Add alternating row background
-      if (i % 2 === 1) {
-        doc.rect(50, doc.y - 5, 490, 20).fill('#f2f2f2');
-        doc.fillColor('#000000');
-      }
-      
-      const rowY = doc.y;
-      const expiryDate = new Date(user.premiumUntil).toLocaleDateString();
-      const planName = (user.premiumPlan || 'standard').charAt(0).toUpperCase() + (user.premiumPlan || 'standard').slice(1);
-      
-      doc.text(user.email || 'N/A', 50, rowY, { width: 200 })
-        .text(planName, 250, rowY, { width: 80 })
-        .text(`${user.discountRate || 0}%`, 330, rowY, { width: 80 })
-        .text(expiryDate, 410, rowY, { width: 130 })
-        .moveDown();
-    });
-    
-    // Add footer with page number - FIX THE PAGE NUMBERING ISSUE
-    const range = doc.bufferedPageRange();
-    for (let i = 0; i < range.count; i++) {
-      // PDFKit uses 1-based page numbers internally
-      const pageNumber = range.start + i + 1;
-      
-      doc.switchToPage(i);
-      doc.fontSize(10)
-        .text(
-          `Page ${pageNumber} of ${range.count}`, 
-          50, 
-          doc.page.height - 50, 
-          { align: 'center' }
-        );
-    }
-    
-    // Finalize PDF
-    doc.end();
-    console.log('PDF report generated successfully');
-  } catch (error) {
-    console.error('Error generating premium users PDF report:', error);
-    res.status(500).json({ error: 'Failed to generate premium users report' });
-  }
-});
-
-// Add a bookings PDF report download endpoint
 router.get('/bookings/report', auth, authorize(['admin']), async (req, res) => {
   try {
     console.log('Generating all bookings PDF report');
@@ -356,7 +399,7 @@ router.get('/bookings/report', auth, authorize(['admin']), async (req, res) => {
       if (startDate) query.date.$gte = new Date(startDate);
       if (endDate) {
         const end = new Date(endDate);
-        end.setDate(end.getDate() + 1); // Include the end date
+        end.setDate(end.getDate() + 1);
         query.date.$lt = end;
       }
     }
