@@ -11,10 +11,8 @@ const AdminVehiclesList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState('all');
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  // Add states for edit and delete operations
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState({ show: false, type: '', vehicle: null });
 
@@ -23,7 +21,6 @@ const AdminVehiclesList = () => {
       try {
         const token = localStorage.getItem('token');
         
-        // Fetch all vehicles
         const vehiclesResponse = await axios.get('http://localhost:8070/vehicles', {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -31,12 +28,10 @@ const AdminVehiclesList = () => {
         console.log("Fetched vehicles:", vehiclesResponse.data);
         setVehicles(vehiclesResponse.data);
         
-        // Fetch all vehicle owners
         const ownersResponse = await axios.get('http://localhost:8070/users/all', {
           headers: { Authorization: `Bearer ${token}` },
         });
         
-        // Filter for vehicle owners and create a lookup object by ID
         const owners = ownersResponse.data.filter(user => user.role === 'vehicle_owner');
         const ownersMap = {};
         owners.forEach(owner => {
@@ -56,45 +51,26 @@ const AdminVehiclesList = () => {
     fetchData();
   }, []);
 
-  // Filter vehicles based on search term and view mode
-  const filteredVehicles = vehicles.filter(vehicle => {
-    const matchesSearch = 
-      vehicle.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      vehicle.licensePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (vehicle.ownerName && vehicle.ownerName.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    // Apply filter based on viewMode
-    if (viewMode === 'all') return matchesSearch;
-    if (viewMode === 'active') return matchesSearch && vehicle.status === 'active';
-    if (viewMode === 'maintenance') return matchesSearch && vehicle.status === 'maintenance';
-    if (viewMode === 'unavailable') return matchesSearch && vehicle.status === 'unavailable';
-    if (viewMode === 'expiring-soon') {
-      // This would require additional data from backend about document expiration dates
-      // For now, return all as a placeholder
-      return matchesSearch;
-    }
-    
-    return matchesSearch;
-  });
+  const filteredVehicles = vehicles.filter(vehicle => 
+    vehicle.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    vehicle.licensePlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (vehicle.ownerName && vehicle.ownerName.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
-  // Handle viewing a vehicle's details
   const handleViewVehicle = (vehicle) => {
     setSelectedVehicle(vehicle);
     setIsViewModalOpen(true);
   };
 
-  // Handle editing a vehicle
   const handleEditVehicle = (vehicle) => {
     setSelectedVehicle(vehicle);
     setIsEditModalOpen(true);
   };
 
-  // Handle vehicle update after editing
   const handleVehicleUpdate = (updatedVehicle) => {
     setVehicles(vehicles.map(v => v._id === updatedVehicle._id ? updatedVehicle : v));
   };
 
-  // Open delete confirmation
   const openDeleteConfirmation = (vehicle) => {
     setConfirmAction({
       show: true,
@@ -103,7 +79,6 @@ const AdminVehiclesList = () => {
     });
   };
 
-  // Handle vehicle deletion
   const handleDeleteVehicle = async () => {
     if (!confirmAction.vehicle) return;
     
@@ -134,49 +109,10 @@ const AdminVehiclesList = () => {
     }
   };
 
-  // Get owner email from owner ID
   const getOwnerEmail = (ownerId) => {
     return vehicleOwners[ownerId] ? vehicleOwners[ownerId].email : "Unknown Owner";
   };
 
-  // Calculate days until document expiration (placeholder function)
-  // In a real implementation, you would get the expiration date from the document metadata or database
-  const getDaysUntilExpiration = (documentPath) => {
-    if (!documentPath) return "N/A";
-    
-    // This is a placeholder - in a real system, you would extract actual dates
-    // For demonstration, return random days between 1 and 365
-    return Math.floor(Math.random() * 365) + 1;
-  };
-
-  // Generate a status indicator based on days remaining
-  const getExpirationStatus = (days) => {
-    if (days === "N/A") return { label: "Missing", color: "bg-red-100 text-red-800" };
-    
-    const daysNum = parseInt(days);
-    if (daysNum <= 30) return { label: "Expiring Soon", color: "bg-red-100 text-red-800" };
-    if (daysNum <= 90) return { label: "Valid", color: "bg-yellow-100 text-yellow-800" };
-    return { label: "Valid", color: "bg-green-100 text-green-800" };
-  };
-
-  // Render functions for document status badges
-  const renderDocumentStatus = (documentPath) => {
-    const daysRemaining = getDaysUntilExpiration(documentPath);
-    const status = getExpirationStatus(daysRemaining);
-    
-    return (
-      <div className="flex items-center space-x-2">
-        <span className={`px-2 py-1 text-xs font-medium rounded-full ${status.color}`}>
-          {status.label}
-        </span>
-        {daysRemaining !== "N/A" && (
-          <span className="text-xs text-gray-500">{daysRemaining} days</span>
-        )}
-      </div>
-    );
-  };
-
-  // Add a new function to handle PDF generation
   const handleDownloadPdf = (vehicle) => {
     const ownerData = vehicleOwners[vehicle.ownerId] || {};
     generateVehiclePdf(vehicle, ownerData);
@@ -189,7 +125,6 @@ const AdminVehiclesList = () => {
         <div className="users-list">
           <h2 className="text-xl font-semibold mb-4">Vehicle Monitoring Dashboard</h2>
           
-          {/* Search and filters */}
           <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
             <div className="w-full md:w-1/2">
               <input
@@ -200,49 +135,13 @@ const AdminVehiclesList = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
-            <div className="w-full md:w-1/2 flex gap-2 justify-between">
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => setViewMode('all')}
-                  className={`px-3 py-1 rounded-md ${viewMode === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-                >
-                  All
-                </button>
-                <button 
-                  onClick={() => setViewMode('active')}
-                  className={`px-3 py-1 rounded-md ${viewMode === 'active' ? 'bg-green-600 text-white' : 'bg-gray-200'}`}
-                >
-                  Active
-                </button>
-              
-             
-                <button 
-                  onClick={() => setViewMode('expiring-soon')}
-                  className={`px-3 py-1 rounded-md ${viewMode === 'expiring-soon' ? 'bg-purple-600 text-white' : 'bg-gray-200'}`}
-                >
-                  Expiring Soon
-                </button>
-              </div>
-              
-            
-            </div>
           </div>
           
-          {/* Stats summary */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="mb-6">
             <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
               <div className="text-sm text-gray-600">Total Vehicles</div>
               <div className="text-2xl font-bold">{vehicles.length}</div>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500">
-              <div className="text-sm text-gray-600">Active Vehicles</div>
-              <div className="text-2xl font-bold text-green-600">
-                {vehicles.filter(v => v.status === 'active').length}
-              </div>
-            </div>
-            
-           
           </div>
           
           {loading ? (
@@ -259,7 +158,6 @@ const AdminVehiclesList = () => {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle Type</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Plate</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Owner</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Doc</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Insurance Doc</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -287,43 +185,29 @@ const AdminVehiclesList = () => {
                             <div className="text-sm text-gray-500">{getOwnerEmail(vehicle.ownerId)}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                              ${vehicle.status === 'active' ? 'bg-green-100 text-green-800' : 
-                                vehicle.status === 'maintenance' ? 'bg-yellow-100 text-yellow-800' : 
-                                'bg-red-100 text-red-800'}`}>
-                              {vehicle.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
                             {vehicle.licenseDoc ? (
-                              <>
-                                {renderDocumentStatus(vehicle.licenseDoc)}
-                                <a 
-                                  href={`http://localhost:8070/${vehicle.licenseDoc}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline text-xs"
-                                >
-                                  View Document
-                                </a>
-                              </>
+                              <a 
+                                href={`http://localhost:8070/${vehicle.licenseDoc}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline text-xs"
+                              >
+                                View Document
+                              </a>
                             ) : (
                               <span className="text-xs text-red-600">Missing</span>
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {vehicle.insuranceDoc ? (
-                              <>
-                                {renderDocumentStatus(vehicle.insuranceDoc)}
-                                <a 
-                                  href={`http://localhost:8070/${vehicle.insuranceDoc}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 hover:underline text-xs"
-                                >
-                                  View Document
-                                </a>
-                              </>
+                              <a 
+                                href={`http://localhost:8070/${vehicle.insuranceDoc}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline text-xs"
+                              >
+                                View Document
+                              </a>
                             ) : (
                               <span className="text-xs text-red-600">Missing</span>
                             )}
@@ -363,7 +247,7 @@ const AdminVehiclesList = () => {
                       ))}
                       {filteredVehicles.length === 0 && (
                         <tr>
-                          <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
+                          <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
                             No vehicles match your search criteria
                           </td>
                         </tr>
@@ -381,7 +265,6 @@ const AdminVehiclesList = () => {
         </div>
       </div>
       
-      {/* Vehicle Details Modal */}
       {isViewModalOpen && selectedVehicle && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -434,26 +317,20 @@ const AdminVehiclesList = () => {
                 </div>
               </div>
               
-              {/* Documents Section */}
               <div className="mb-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Documents</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="border rounded-lg p-4">
                     <h4 className="font-medium mb-2">License Document</h4>
                     {selectedVehicle.licenseDoc ? (
-                      <>
-                        <div className="mb-2">
-                          <span className="font-semibold">Status:</span> {renderDocumentStatus(selectedVehicle.licenseDoc)}
-                        </div>
-                        <a 
-                          href={`http://localhost:8070/${selectedVehicle.licenseDoc}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        >
-                          View License Document
-                        </a>
-                      </>
+                      <a 
+                        href={`http://localhost:8070/${selectedVehicle.licenseDoc}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        View License Document
+                      </a>
                     ) : (
                       <div className="text-red-600">License document not uploaded</div>
                     )}
@@ -462,19 +339,14 @@ const AdminVehiclesList = () => {
                   <div className="border rounded-lg p-4">
                     <h4 className="font-medium mb-2">Insurance Document</h4>
                     {selectedVehicle.insuranceDoc ? (
-                      <>
-                        <div className="mb-2">
-                          <span className="font-semibold">Status:</span> {renderDocumentStatus(selectedVehicle.insuranceDoc)}
-                        </div>
-                        <a 
-                          href={`http://localhost:8070/${selectedVehicle.insuranceDoc}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                        >
-                          View Insurance Document
-                        </a>
-                      </>
+                      <a 
+                        href={`http://localhost:8070/${selectedVehicle.insuranceDoc}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        View Insurance Document
+                      </a>
                     ) : (
                       <div className="text-red-600">Insurance document not uploaded</div>
                     )}
@@ -482,7 +354,6 @@ const AdminVehiclesList = () => {
                 </div>
               </div>
               
-              {/* Vehicle Images */}
               {selectedVehicle.images && selectedVehicle.images.length > 0 && (
                 <div className="mb-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Vehicle Images</h3>
@@ -526,7 +397,6 @@ const AdminVehiclesList = () => {
         </div>
       )}
       
-      {/* Edit Vehicle Modal */}
       {isEditModalOpen && selectedVehicle && (
         <EditVehicleModal
           vehicle={selectedVehicle}
@@ -536,7 +406,6 @@ const AdminVehiclesList = () => {
         />
       )}
       
-      {/* Confirmation Modal */}
       {confirmAction.show && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">

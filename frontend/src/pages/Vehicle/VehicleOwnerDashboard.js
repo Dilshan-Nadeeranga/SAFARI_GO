@@ -150,7 +150,7 @@ const VehicleOwnerDashboard = () => {
       );
       
       if (response.status === 200) {
-        setVehicles(vehicles.filter(v => v._id !== confirmAction.vehicle._id));
+        setVehicles(vehicle => vehicles.filter(v => v._id !== confirmAction.vehicle._id));
         setConfirmAction({ show: false, type: '', vehicle: null });
       }
     } catch (error) {
@@ -280,14 +280,6 @@ const VehicleOwnerDashboard = () => {
                       e.target.src = `https://via.placeholder.com/300x200?text=${encodeURIComponent(vehicle.type)}`;
                     }}
                   />
-                  <div className="absolute top-0 right-0 m-2">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full 
-                      ${vehicle.status === 'active' ? 'bg-green-100 text-green-800' : 
-                        vehicle.status === 'maintenance' ? 'bg-amber-100 text-amber-800' : 
-                        'bg-red-100 text-red-800'}`}>
-                      {vehicle.status}
-                    </span>
-                  </div>
                   {vehicle.images && vehicle.images.length > 1 && (
                     <div className="absolute bottom-2 right-2 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-full">
                       +{vehicle.images.length - 1} more
