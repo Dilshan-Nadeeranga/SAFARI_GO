@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Sidebar from './Sidebar';
-// Fix the import path for Widget
 import Widget from '../Componet/pages/Widget';
 import Chart from '../Componet/chart/Chart';
 import Table from './Table';
 import "../Componet/CSS/Dashboard.css";
 import PremiumStatistics from './PremiumStatistics';
-import UserTypeStatistics from './UserTypeStatistics'; // Add this import
-import { downloadPdfReport } from '../../../utils/pdfDownloader'; // Add this import
+import UserTypeStatistics from './UserTypeStatistics';
+import { downloadPdfReport } from '../../../utils/pdfDownloader';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -28,9 +27,9 @@ const Dashboard = () => {
   const [recentBookings, setRecentBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedPlan, setSelectedPlan] = useState('all');
 
   useEffect(() => {
-    // Check if user is authenticated and is an admin
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
     
@@ -41,40 +40,35 @@ const Dashboard = () => {
     
     const fetchAdminDashboardData = async () => {
       try {
-        // Fetch system stats for the admin dashboard
         const statsResponse = await axios.get('http://localhost:8070/admin/stats', {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Fetch recent notifications
         const notificationsResponse = await axios.get('http://localhost:8070/users/notifications', {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Fetch recent users
         const usersResponse = await axios.get('http://localhost:8070/users/all', {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Add this new API call to get recent bookings
         const bookingsResponse = await axios.get('http://localhost:8070/bookings?limit=5', {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        // Set revenue data for chart
         const revenueByMonth = Array.from({ length: 6 }, (_, i) => {
           const month = new Date();
           month.setMonth(month.getMonth() - i);
           return {
             name: month.toLocaleString('default', { month: 'short' }),
-            revenue: statsResponse.data.revenueByMonth[5-i] || 0 // Reverse the order to show oldest to newest
+            revenue: statsResponse.data.revenueByMonth[5-i] || 0
           };
         }).reverse();
 
         setSystemStats(statsResponse.data);
         setRevenueData(revenueByMonth);
         setNotifications(notificationsResponse.data);
-        setRecentUsers(usersResponse.data.slice(0, 8)); // Get only the 8 most recent users
+        setRecentUsers(usersResponse.data.slice(0, 8));
         setRecentBookings(bookingsResponse.data);
         setLoading(false);
       } catch (err) {
@@ -87,7 +81,6 @@ const Dashboard = () => {
     fetchAdminDashboardData();
   }, [navigate]);
 
-  // Add a function to handle PDF download
   const handleDownloadPremiumReport = () => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -95,7 +88,11 @@ const Dashboard = () => {
       return;
     }
     
-    downloadPdfReport('http://localhost:8070/admin/premium-users/report', token);
+    const url = selectedPlan === 'all'
+      ? 'http://localhost:8070/admin/premium-users/report'
+      : `http://localhost:8070/admin/premium-users/report?plan=${selectedPlan}`;
+    
+    downloadPdfReport(url, token);
   };
 
   if (loading) return <div className="flex justify-center items-center h-screen">Loading admin dashboard...</div>;
@@ -112,30 +109,38 @@ const Dashboard = () => {
           <Widget type="bookings" count={systemStats.bookings} diff={8} />
         </div>
         
-        {/* Premium Users Report Button - Add this section */}
-        <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-          <div className="flex justify-between items-center">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h2 className="text-lg font-semibold">Premium Users</h2>
+              <h2 className="text-lg font-semibold">Premium Users Report</h2>
               <p className="text-gray-600 text-sm">
                 Active Premium Users: {systemStats.premiumUsers || 0}
               </p>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
+              <select
+                value={selectedPlan}
+                onChange={(e) => setSelectedPlan(e.target.value)}
+                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Plans</option>
+                <option value="gold">Gold</option>
+                <option value="silver">Silver</option>
+                <option value="bronze">Bronze</option>
+              </select>
               <button 
                 onClick={handleDownloadPremiumReport}
-                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center"
+                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-md hover:from-blue-700 hover:to-blue-800 transition flex items-center shadow-sm"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                Download Premium Users Report
+                Download Report
               </button>
             </div>
           </div>
         </div>
         
-        {/* User Type Statistics - Add this section */}
         <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
           <UserTypeStatistics 
             regularUsers={systemStats.regularUsers || systemStats.users - (systemStats.premiumUsers || 0)} 
@@ -144,7 +149,6 @@ const Dashboard = () => {
           <PremiumStatistics />
         </div>
         
-        {/* Add Recent Bookings Widget */}
         <div className="mb-6">
           <div className="bg-white rounded-lg shadow-md p-4">
             <div className="flex justify-between items-center mb-4">
@@ -177,7 +181,6 @@ const Dashboard = () => {
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                      {/* <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th> */}
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
@@ -197,14 +200,6 @@ const Dashboard = () => {
                           </span>
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">Rs. {booking.amount?.toLocaleString() || '0'}</td>
-                        {/* <td className="px-4 py-2 whitespace-nowrap text-sm">
-                          <button 
-                            onClick={() => navigate(`/admin/booking-details/${booking._id}`)}
-                            className="text-blue-600 hover:text-blue-900 mr-2"
-                          >
-                            View
-                          </button>
-                        </td> */}
                       </tr>
                     ))}
                   </tbody>
@@ -213,8 +208,6 @@ const Dashboard = () => {
             )}
           </div>
         </div>
-        
-       
         
         <div className="listContainer">
           <div className="listTitle">Latest Users</div>
