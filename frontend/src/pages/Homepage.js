@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+
 // Social icons (assuming white versions; replace with actual white icons)
 import instagramWhite from "../Componets/assets/instagram-white.png";
 import facebookWhite from "../Componets/assets/facebook-white.png";
