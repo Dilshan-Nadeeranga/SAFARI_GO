@@ -17,12 +17,10 @@ const AdminFeedbackManagement = () => {
       try {
         const token = localStorage.getItem('token');
         
-        // Fetch all feedback
         const feedbackRes = await axios.get('http://localhost:8070/feedback/all', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
-        // Fetch all guides for assignment
         const guidesRes = await axios.get('http://localhost:8070/users/guides', {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -49,11 +47,9 @@ const AdminFeedbackManagement = () => {
     try {
       const token = localStorage.getItem('token');
       
-      // Find the selected guide's name/email for better notification
       const guideInfo = guides.find(g => g._id === selectedGuide);
       const guideName = guideInfo?.name || guideInfo?.email || 'Selected guide';
       
-      // Include detailed information in the assignment request
       await axios.put(`http://localhost:8070/feedback/assign-guide/${selectedFeedback._id}`, 
         { 
           guideId: selectedGuide,
@@ -67,7 +63,6 @@ const AdminFeedbackManagement = () => {
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
-      // Update local state
       setFeedback(feedback.map(f => 
         f._id === selectedFeedback._id 
           ? {...f, guideId: selectedGuide, status: 'assigned'} 
@@ -92,13 +87,8 @@ const AdminFeedbackManagement = () => {
     
     try {
       const token = localStorage.getItem('token');
-      console.log(`Sending response to feedback ID: ${selectedFeedback._id}`);
-      
-      // Create payload object with required property
       const payload = { feedbackMsg: adminResponse.trim() };
-      console.log("Sending payload:", payload);
       
-      // Show loading state
       setLoading(true);
       
       const response = await axios.put(
@@ -109,13 +99,10 @@ const AdminFeedbackManagement = () => {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
-          timeout: 10000 // Add timeout to prevent hanging requests
+          timeout: 10000
         }
       );
       
-      console.log('Response succeeded:', response.data);
-      
-      // Update local state
       setFeedback(feedback.map(f => 
         f._id === selectedFeedback._id 
           ? {...f, adminResponse, status: 'responded'} 
@@ -131,23 +118,47 @@ const AdminFeedbackManagement = () => {
       let errorMessage = 'Failed to submit response';
       
       if (err.response) {
-        console.log("Server response error data:", err.response.data);
-        // The server responded with a status code outside the 2xx range
-        if (err.response.data && err.response.data.message) {
-          errorMessage = err.response.data.message;
-        } else if (err.response.data && err.response.data.error) {
-          errorMessage = err.response.data.error;
-        } else {
-          errorMessage = `Server error (${err.response.status})`;
-        }
+        errorMessage = err.response.data.message || err.response.data.error || `Server error (${err.response.status})`;
       } else if (err.request) {
-        // The request was made but no response was received
         errorMessage = 'No response from server. Please check your connection.';
       }
       
       alert(`Error: ${errorMessage}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteFeedback = async (feedbackId) => {
+    if (!window.confirm('Are you sure you want to delete this feedback? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      await axios.delete(`http://localhost:8070/feedback/${feedbackId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      setFeedback(feedback.filter(f => f._id !== feedbackId));
+      
+      alert('Feedback deleted successfully');
+    } catch (err) {
+      console.error('Error deleting feedback:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      let errorMessage = 'Failed to delete feedback';
+      
+      if (err.response) {
+        errorMessage = err.response.data.message || err.response.data.error || `Server error (${err.response.status})`;
+      } else if (err.request) {
+        errorMessage = 'No response from server. Please check your connection.';
+      }
+      
+      alert(`Error: ${errorMessage}`);
     }
   };
   
@@ -191,7 +202,6 @@ const AdminFeedbackManagement = () => {
         <div className="p-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-semibold">Feedback Management</h2>
-            
             <a 
               href="/admin/feedback-report" 
               className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center"
@@ -246,15 +256,7 @@ const AdminFeedbackManagement = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           {new Date(item.createdAt).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {item.status === 'pending' && (
-                            <button 
-                              onClick={() => setSelectedFeedback(item)}
-                              className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 mr-2"
-                            >
-                              Assign
-                            </button>
-                          )}
+                        <td className="px-6 py-4 whitespace-nowrap flex space-x-2">
                           <button 
                             onClick={() => {
                               setSelectedFeedback(item);
@@ -263,6 +265,12 @@ const AdminFeedbackManagement = () => {
                             className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
                           >
                             Respond
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteFeedback(item._id)}
+                            className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                          >
+                            Delete
                           </button>
                         </td>
                       </tr>
@@ -274,7 +282,6 @@ const AdminFeedbackManagement = () => {
           </div>
         </div>
         
-        {/* Assign Guide Modal */}
         {selectedFeedback && !adminResponse && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full">
@@ -327,7 +334,6 @@ const AdminFeedbackManagement = () => {
           </div>
         )}
         
-        {/* Admin Response Modal */}
         {selectedFeedback && adminResponse !== undefined && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full">

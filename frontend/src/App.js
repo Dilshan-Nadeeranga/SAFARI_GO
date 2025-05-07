@@ -21,7 +21,6 @@ import AllVehicles from './pages/Vehicle/AllVehicles'; // Add this import
 import VehicleDetails from './pages/Vehicle/VehicleDetails'; // Add this import
 import RentVehicle from './pages/Vehicle/RentVehicle'; // Add this import
 import UserRentals from './pages/User/UserRentals'; // Add this import
-
 import SafariPlanner from './pages/User/SafariPlanner.js';
 
 // Admin
