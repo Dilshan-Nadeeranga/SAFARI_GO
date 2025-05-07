@@ -17,11 +17,7 @@ import UserSafaris from './pages/User/UserSafaris';
 import PublicSafaris from './pages/PublicSafaris';
 import BookSafari from './pages/BookSafari';
 
-import UserFeedback from './pages/User/UserFeedback';
-import AllVehicles from './pages/Vehicle/AllVehicles';
-import VehicleDetails from './pages/Vehicle/VehicleDetails';
-import RentVehicle from './pages/Vehicle/RentVehicle';
-import UserRentals from './pages/User/UserRentals';
+
 
 import UserFeedback from './pages/User/UserFeedback'; // Add this new import
 import AllVehicles from './pages/Vehicle/AllVehicles'; // Add this import
