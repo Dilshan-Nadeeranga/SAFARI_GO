@@ -450,5 +450,5 @@ const AdminFeedbackReport = () => {
     </div>
   );
 };
-
+//CSS styles for line-clamp (tailwindcss)
 export default AdminFeedbackReport;
