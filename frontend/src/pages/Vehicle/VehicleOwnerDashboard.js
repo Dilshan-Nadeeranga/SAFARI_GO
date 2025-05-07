@@ -1,30 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import EditVehicleModal from './EditVehicleModal';
 
 const VehicleOwnerDashboard = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [vehicles, setVehicles] = useState([]);
-  const [bookings, setBookings] = useState([]);
   const [stats, setStats] = useState({
-    totalVehicles: 0,
-    activeVehicles: 0,
-    pendingBookings: 0,
-    confirmedBookings: 0,
-    completedBookings: 0,
-    totalEarnings: 0,
     monthlyEarnings: []
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [viewMode, setViewMode] = useState('cards'); // 'table' or 'cards'
+  const [viewMode, setViewMode] = useState('cards');
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false); // Add this new state
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState({ show: false, type: '', vehicle: null });
 
   useEffect(() => {
@@ -40,7 +32,6 @@ const VehicleOwnerDashboard = () => {
       try {
         console.log("Fetching vehicle owner data with token:", token.substring(0, 20) + "...");
         
-        // Fetch profile data
         const profileResponse = await axios.get('http://localhost:8070/users/profile', {
           headers: { 
             'Authorization': `Bearer ${token}`,
@@ -51,48 +42,19 @@ const VehicleOwnerDashboard = () => {
         console.log("Profile data received:", profileResponse.data);
         setProfile(profileResponse.data);
         
-        // Continue with other requests only if profile was successful
         try {
-          // Fetch vehicles
           const vehiclesResponse = await axios.get('http://localhost:8070/vehicles', {
             headers: { Authorization: `Bearer ${token}` }
           });
           setVehicles(vehiclesResponse.data);
         } catch (vehicleError) {
           console.warn("Could not fetch vehicles:", vehicleError);
-          setVehicles([]); // Set default empty array
+          setVehicles([]);
         }
         
-        try {
-          // Fetch vehicle bookings
-          const bookingsResponse = await axios.get('http://localhost:8070/bookings/vehicle-owner', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setBookings(bookingsResponse.data);
-        } catch (bookingError) {
-          console.warn("Could not fetch bookings:", bookingError);
-          setBookings([]); // Set default empty array
-        }
-        
-        // Calculate stats with default values if needed
-        const activeVehicles = vehicles.filter(v => v.status === 'active').length;
-        const pendingBookings = bookings.filter(b => b.status === 'pending').length;
-        const confirmedBookings = bookings.filter(b => b.status === 'confirmed').length;
-        const completedBookings = bookings.filter(b => b.status === 'completed').length;
-        const totalEarnings = bookings
-          .filter(b => b.status === 'completed')
-          .reduce((total, booking) => total + booking.amount, 0);
-
-        // Use placeholder data for monthly earnings if data is missing
         const monthlyData = generateMonthlyDataPlaceholder();
         
         setStats({
-          totalVehicles: vehicles.length,
-          activeVehicles,
-          pendingBookings,
-          confirmedBookings,
-          completedBookings,
-          totalEarnings,
           monthlyEarnings: monthlyData
         });
         
@@ -100,7 +62,6 @@ const VehicleOwnerDashboard = () => {
       } catch (err) {
         console.error('Error fetching vehicle owner data:', err);
         
-        // Show specific error message based on status code
         if (err.response?.status === 404) {
           setError('Your profile could not be found. Please contact support.');
         } else if (err.response?.status === 401) {
@@ -116,7 +77,6 @@ const VehicleOwnerDashboard = () => {
       }
     };
     
-    // Helper function to generate placeholder monthly data
     const generateMonthlyDataPlaceholder = () => {
       return Array.from({ length: 6 }, (_, i) => {
         const month = new Date();
@@ -130,32 +90,26 @@ const VehicleOwnerDashboard = () => {
     fetchVehicleOwnerData();
   }, [navigate, refreshTrigger]);
 
-  // Add useEffect to refresh data when component mounts or returns to focus
   useEffect(() => {
-    // This will trigger a refresh when the component gains focus (user returns to page)
     const handleFocus = () => setRefreshTrigger(prev => prev + 1);
     window.addEventListener('focus', handleFocus);
     
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-  // Add logout handler function
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     navigate('/LoginForm');
   };
 
-  // Function to get vehicle image or placeholder
   const getVehicleImage = (vehicle) => {
     if (vehicle.images && vehicle.images.length > 0) {
       return `http://localhost:8070/${vehicle.images[0]}`;
     }
-    // Return placeholder image based on vehicle type
     return `https://via.placeholder.com/300x200?text=${encodeURIComponent(vehicle.type)}`;
   };
 
-  // Functions for Vehicle Management
   const handleEditVehicle = (vehicle) => {
     setSelectedVehicle(vehicle);
     setIsEditModalOpen(true);
@@ -163,10 +117,9 @@ const VehicleOwnerDashboard = () => {
 
   const handleVehicleUpdate = (updatedVehicle) => {
     setVehicles(vehicles.map(v => v._id === updatedVehicle._id ? updatedVehicle : v));
-    setRefreshTrigger(prev => prev + 1); // Refresh data
+    setRefreshTrigger(prev => prev + 1);
   };
 
-  // Add this function to handle viewing a vehicle
   const handleViewVehicle = (vehicle) => {
     setSelectedVehicle(vehicle);
     setIsViewModalOpen(true);
@@ -203,7 +156,6 @@ const VehicleOwnerDashboard = () => {
     } catch (error) {
       console.error('Error deleting vehicle:', error);
       
-      // More detailed error message
       const errorMessage = error.response?.data?.error || 
                            error.response?.data?.message || 
                            `Failed to delete vehicle (${error.response?.status || 'unknown error'})`;
@@ -217,7 +169,6 @@ const VehicleOwnerDashboard = () => {
 
   return (
     <div className="p-6">
-      {/* Header with navigation buttons */}
       <div className="flex justify-end mb-4 gap-4">
         <button
           onClick={() => navigate('/')}
@@ -250,62 +201,6 @@ const VehicleOwnerDashboard = () => {
         </div>
       </div>
 
-      {/* Stats cards - Enhanced with larger text and icons */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-          <div className="flex justify-between items-center">
-            <div>
-              <div className="text-gray-500 text-sm font-medium">Total Vehicles</div>
-              <div className="text-4xl font-bold mt-2">{stats.totalVehicles}</div>
-            </div>
-            <div className="text-blue-500 text-2xl">
-              {/* Car icon representation */}
-              🚗
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
-          <div className="flex justify-between items-center">
-            <div>
-              <div className="text-gray-500 text-sm font-medium">Active Vehicles</div>
-              <div className="text-4xl font-bold mt-2 text-green-600">{stats.activeVehicles}</div>
-            </div>
-            <div className="text-green-500 text-2xl">
-              {/* Active car icon representation */}
-              ✅
-            </div>
-          </div>
-        </div>
-        
-       
-      </div>
-
-      {/* Earnings chart
-      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-lg font-semibold mb-4">Monthly Earnings</h2>
-        <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={stats.monthlyEarnings}
-              margin={{
-                top: 20,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip formatter={(value) => [`$${value}`, 'Earnings']} />
-              <Legend />
-              <Bar dataKey="earnings" fill="#8884d8" name="Earnings ($)" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div> */}
-
-      {/* Vehicles list with view toggle */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">My Vehicles</h2>
@@ -329,13 +224,11 @@ const VehicleOwnerDashboard = () => {
           <p className="text-gray-500">No vehicles registered yet.</p>
         ) : viewMode === 'table' ? (
           <div className="overflow-x-auto">
-            {/* Existing table view */}
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">License Plate</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Booking</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -345,14 +238,6 @@ const VehicleOwnerDashboard = () => {
                   <tr key={vehicle._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{vehicle.type}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{vehicle.licensePlate}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${vehicle.status === 'active' ? 'bg-green-100 text-green-800' : 
-                          vehicle.status === 'maintenance' ? 'bg-amber-100 text-amber-800' : 
-                          'bg-red-100 text-red-800'}`}>
-                        {vehicle.status}
-                      </span>
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {vehicle.currentBookingId ? `Booking #${vehicle.currentBookingId.substring(0, 8)}` : 'None'}
                     </td>
@@ -466,74 +351,6 @@ const VehicleOwnerDashboard = () => {
         )}
       </div>
 
-      {/* Recent bookings */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-lg font-semibold mb-4">Recent Bookings</h2>
-        {bookings.length === 0 ? (
-          <p className="text-gray-500">No bookings yet.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booking ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {bookings.slice(0, 5).map((booking) => (
-                  <tr key={booking._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking._id.substring(0, 8)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking.vehicle.type}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking.customer.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(booking.date).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${booking.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                          booking.status === 'confirmed' ? 'bg-blue-100 text-blue-800' : 
-                          booking.status === 'pending' ? 'bg-amber-100 text-amber-800' : 
-                          'bg-red-100 text-red-800'}`}>
-                        {booking.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${booking.amount}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {booking.status === 'pending' && (
-                        <>
-                          <button className="text-green-600 hover:text-green-900 mr-3">Accept</button>
-                          <button className="text-red-600 hover:text-red-900">Reject</button>
-                        </>
-                      )}
-                      {booking.status === 'confirmed' && (
-                        <button className="text-blue-600 hover:text-blue-900">Complete</button>
-                      )}
-                      {booking.status === 'completed' && (
-                        <button className="text-gray-600 hover:text-gray-900">Details</button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {bookings.length > 5 && (
-              <div className="py-3 px-6 text-right">
-                <button 
-                  className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                >
-                  View all bookings
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Add View Vehicle Modal */}
       {isViewModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -571,7 +388,6 @@ const VehicleOwnerDashboard = () => {
                   </div>
                 </div>
                 
-                {/* Display vehicle images if available */}
                 {selectedVehicle.images && selectedVehicle.images.length > 0 && (
                   <div className="mt-6">
                     <h3 className="text-lg font-medium text-gray-700 mb-3 border-b pb-2">Vehicle Images</h3>
@@ -593,7 +409,6 @@ const VehicleOwnerDashboard = () => {
                   </div>
                 )}
                 
-                {/* Display document links if available */}
                 <div className="mt-6">
                   <h3 className="text-lg font-medium text-gray-700 mb-3 border-b pb-2">Documents</h3>
                   <div className="flex flex-col space-y-3">
@@ -645,7 +460,6 @@ const VehicleOwnerDashboard = () => {
         </div>
       )}
 
-      {/* Edit Vehicle Modal */}
       {isEditModalOpen && (
         <EditVehicleModal
           vehicle={selectedVehicle}
@@ -655,7 +469,6 @@ const VehicleOwnerDashboard = () => {
         />
       )}
 
-      {/* Confirmation Modal */}
       {confirmAction.show && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
