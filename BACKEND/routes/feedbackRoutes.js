@@ -41,6 +41,14 @@ router.put('/resolve/:feedbackId', authenticateToken, authorize(['admin', 'guide
 // Update user's own feedback - requires user authentication
 router.put('/update/:feedbackId', authenticateToken, feedbackController.updateUserFeedback);
 
+// New delete route
+router.delete('/:feedbackId', authenticateToken, authorizeAdmin, (req, res) => {
+  if (!req.params.feedbackId || !mongoose.Types.ObjectId.isValid(req.params.feedbackId)) {
+    return res.status(400).json({ message: 'Invalid feedback ID format' });
+  }
+  feedbackController.deleteFeedback(req, res);
+});
+
 // This generic route MUST come AFTER more specific routes to avoid conflicts
 router.put('/:feedbackId', authenticateToken, feedbackController.updateUserFeedback);
 
