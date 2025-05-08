@@ -23,6 +23,7 @@ import RentVehicle from './pages/Vehicle/RentVehicle';
 import UserRentals from './pages/User/UserRentals';
 import SafariPlanner from './pages/User/SafariPlanner.js';
 import Blog from './pages/Blog/blog.js'; // Add this import
+import Article1 from "./pages/articles/Article1.js";
 // Admin
 import Dashboard from './pages/Admin/AdminDashboard/Dashboard.jsx';
 import UsersList from './pages/Admin/List/UsersList';
@@ -66,6 +67,7 @@ function App() {
           <Route path="/BookSafari" element={<BookSafari />} />
            
           <Route path="/blog" element={<Blog />} /> {/* Updated to /blog */}
+          <Route path="/blog/article1" element={<Article1 />} /> {/* Updated to /blog/article1 */}
           <Route path="/vehicles" element={<AllVehicles />} />
           <Route path="/vehicles/:id" element={<VehicleDetails />} />
           <Route path="/rent-vehicle" element={<RentVehicle />} />
