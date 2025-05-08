@@ -105,26 +105,25 @@ const AdminFeedbackReport = () => {
     const stats = getFilterStats();
     
     return {
-      labels: ['Pending', 'Assigned', 'Responded', 'Resolved'],
+      labels: ['Pending',  'Responded',],
       datasets: [
         {
           data: [
-            stats.byStatus.pending,
-            stats.byStatus.assigned, 
+            stats.byStatus.pending, 
             stats.byStatus.responded,
-            stats.byStatus.resolved
+           
           ],
           backgroundColor: [
             'rgba(255, 206, 86, 0.6)', // pending - yellow
-            'rgba(54, 162, 235, 0.6)', // assigned - blue
+      
             'rgba(153, 102, 255, 0.6)', // responded - purple
-            'rgba(75, 192, 192, 0.6)', // resolved - green
+            
           ],
           borderColor: [
             'rgba(255, 206, 86, 1)',
-            'rgba(54, 162, 235, 1)',
+      
             'rgba(153, 102, 255, 1)',
-            'rgba(75, 192, 192, 1)',
+            
           ],
           borderWidth: 1,
         },
@@ -137,12 +136,10 @@ const AdminFeedbackReport = () => {
     switch(status) {
       case 'pending':
         return <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Pending</span>;
-      case 'assigned':
-        return <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Assigned</span>;
+   
       case 'responded':
         return <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">Responded</span>;
-      case 'resolved':
-        return <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Resolved</span>;
+     
       default:
         return <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">{status}</span>;
     }
@@ -298,7 +295,6 @@ const AdminFeedbackReport = () => {
                 >
                   <option value="all">All Statuses</option>
                   <option value="pending">Pending</option>
-                  <option value="assigned">Assigned</option>
                   <option value="responded">Responded</option>
                 </select>
               </div>
@@ -454,5 +450,5 @@ const AdminFeedbackReport = () => {
     </div>
   );
 };
-
+//CSS styles for line-clamp (tailwindcss)
 export default AdminFeedbackReport;
