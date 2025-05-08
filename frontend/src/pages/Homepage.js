@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+
 // Social icons (assuming white versions; replace with actual white icons)
 import instagramWhite from "../Componets/assets/instagram-white.png";
 import facebookWhite from "../Componets/assets/facebook-white.png";
@@ -218,7 +219,7 @@ function HomePage() {
                 </a>
               </div>
             </div>
-            <a href="/" className="text-white hover:text-blue-200 transition-colors">About Us</a>
+            <a href="/about" className="text-white hover:text-blue-200 transition-colors">About Us</a>
             <a href="/maintenance" className="text-white hover:text-blue-200 transition-colors">Blogs</a>
             <div className="relative dropdown-container">
               <button
@@ -544,7 +545,7 @@ function HomePage() {
               <h3 className="text-2xl font-bold mb-4 text-blue-200">Quick Navigation</h3>
               <ul className="list-none space-y-2">
                 <li>
-                  <a href="/" className="text-white hover:text-blue-200 transition-colors">About Us</a>
+                  <a href="/about" className="text-white hover:text-blue-200 transition-colors">About Us</a>
                 </li>
                 <li>
                   <a href="/contact" className="text-white hover:text-blue-200 transition-colors">Contact Us</a>
