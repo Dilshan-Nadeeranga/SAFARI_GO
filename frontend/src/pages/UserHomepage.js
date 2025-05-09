@@ -115,6 +115,8 @@ const UserHomepage = () => {
             <a href="/activities" className="text-lg hover:text-blue-200 transition-colors duration-200">Activities</a>
             <a href="/about" className="text-lg hover:text-blue-200 transition-colors duration-200">About</a>
             <a href="/contact" className="text-lg hover:text-blue-200 transition-colors duration-200">Contact</a>
+            <a href="/blog" className="text-lg hover:text-blue-200 transition-colors duration-200">Blog</a>
+
             {premiumStatus?.isPremium && (
               <a href="/user/subscriptions" className="flex items-center text-lg hover:text-blue-200 transition-colors duration-200">
                 <span className="text-yellow-300 mr-2">✨</span>
@@ -194,6 +196,8 @@ const UserHomepage = () => {
             <a href="/activities" className="block py-2 text-lg hover:text-blue-200 transition-colors">Activities</a>
             <a href="/about" className="block py-2 text-lg hover:text-blue-200 transition-colors">About</a>
             <a href="/contact" className="block py-2 text-lg hover:text-blue-200 transition-colors">Contact</a>
+            <li><a href="/blog" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Blog</a></li>
+
             {premiumStatus?.isPremium && (
               <a href="/user/subscriptions" className="block py-2 text-lg hover:text-blue-200 transition-colors flex items-center">
                 <span className="text-yellow-300 mr-2">✨</span>
@@ -400,7 +404,7 @@ const UserHomepage = () => {
               <ul className="space-y-3">
                 <li><a href="/discover" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Discover</a></li>
                 <li><a href="/about" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">About Us</a></li>
-                <li><a href="/blog" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Blog & Articles</a></li>
+                <li><a href="/blog" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Blog</a></li>
                 <li><a href="/feedback" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Leave Feedback</a></li>
                 <li><a href="/services" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Services</a></li>
                 <li><a href="/community" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Community</a></li>

@@ -10,20 +10,20 @@ const UserLayout = ({ children }) => {
     localStorage.removeItem("role");
     navigate("/LoginForm");
   };
-
+ 
   return (
     <div className="flex min-h-[calc(100vh-64px)]">
       {/* Sidebar */}
-      <aside className="bg-blue-800.petrol text-white w-64 flex-shrink-0 hidden md:block">
+      <aside className="bg-blue-900 text-white w-64 flex-shrink-0 hidden md:block">
         <div className="p-6">
-          <h2 className="text-xl font-semibold mb-6">Welcome, User</h2>
+          <h2 className="text-xl font-semibold mb-6 text-white">Welcome User!</h2>
           <ul className="space-y-4">
             <li>
               <NavLink
                 to="/user/dashboard"
                 className={({ isActive }) =>
                   `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
+                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-700"
                   }`
                 }
               >
@@ -36,7 +36,7 @@ const UserLayout = ({ children }) => {
                 to="/user/safaris"
                 className={({ isActive }) =>
                   `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
+                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-700"
                   }`
                 }
               >
@@ -49,7 +49,7 @@ const UserLayout = ({ children }) => {
                 to="/user/trips"
                 className={({ isActive }) =>
                   `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
+                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-700"
                   }`
                 }
               >
@@ -62,7 +62,7 @@ const UserLayout = ({ children }) => {
                 to="/user/rentals"
                 className={({ isActive }) =>
                   `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
+                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-700"
                   }`
                 }
               >
@@ -75,7 +75,7 @@ const UserLayout = ({ children }) => {
                 to="/user/planner"
                 className={({ isActive }) =>
                   `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
+                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-700"
                   }`
                 }
               >
@@ -88,7 +88,7 @@ const UserLayout = ({ children }) => {
                 to="/user/subscriptions"
                 className={({ isActive }) =>
                   `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
+                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-700"
                   }`
                 }
               >
@@ -101,7 +101,7 @@ const UserLayout = ({ children }) => {
                 to="/user/settings"
                 className={({ isActive }) =>
                   `flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-600"
+                    isActive ? "bg-blue-700 text-blue-100" : "text-blue-200 hover:bg-blue-700"
                   }`
                 }
               >
@@ -112,7 +112,7 @@ const UserLayout = ({ children }) => {
           </ul>
         </div>
         <div
-          className="p-6 flex items-center space-x-2 text-blue-200 hover:bg-blue-600 cursor-pointer"
+          className="p-6 flex items-center space-x-2 text-blue-200 hover:bg-blue-700 cursor-pointer"
           onClick={handleLogout}
         >
           <FaSignOutAlt />

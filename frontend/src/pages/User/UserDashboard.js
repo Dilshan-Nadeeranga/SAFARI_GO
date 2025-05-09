@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-// Remove recharts imports
 
 const UserDashboard = () => {
   const navigate = useNavigate();
@@ -13,7 +12,6 @@ const UserDashboard = () => {
     canceled: 0,
     total: 0
   });
-  // Add premium status state
   const [premiumStatus, setPremiumStatus] = useState({
     isPremium: false,
     plan: null,
@@ -24,7 +22,6 @@ const UserDashboard = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Check authentication and role
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
     
@@ -35,40 +32,33 @@ const UserDashboard = () => {
     
     const fetchDashboardData = async () => {
       try {
-        // Fetch user profile
         const profileResponse = await axios.get('http://localhost:8070/users/profile', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
-        // Fetch user bookings (assuming you have a bookings endpoint)
         const bookingsResponse = await axios.get('http://localhost:8070/bookings/user', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
-        // Fetch premium status
         const premiumResponse = await axios.get('http://localhost:8070/users/premium/status', {
           headers: { Authorization: `Bearer ${token}` }
         });
         
         setProfile(profileResponse.data);
-        setBookings(bookingsResponse.data);
+        
+        // Process bookings and calculate stats
+        const bookingsData = bookingsResponse.data;
+        setBookings(bookingsData);
+        
+        // Calculate stats
+        const bookingStats = calculateBookingStats(bookingsData);
+        setStats(bookingStats);
+        
         setPremiumStatus({
           isPremium: premiumResponse.data.isPremium,
           plan: premiumResponse.data.plan,
           premiumUntil: premiumResponse.data.premiumUntil,
           discountRate: premiumResponse.data.discountRate
-        });
-        
-        // Calculate statistics
-        const upcoming = bookingsResponse.data.filter(b => b.status === 'upcoming').length;
-        const completed = bookingsResponse.data.filter(b => b.status === 'completed').length;
-        const canceled = bookingsResponse.data.filter(b => b.status === 'canceled').length;
-        
-        setStats({
-          upcoming,
-          completed,
-          canceled,
-          total: bookingsResponse.data.length
         });
         
         setLoading(false);
@@ -82,12 +72,60 @@ const UserDashboard = () => {
     fetchDashboardData();
   }, [navigate]);
 
-  // Remove chart data
+  // Updated function to calculate booking statistics
+  const calculateBookingStats = (bookingsData) => {
+    // Initialize counters
+    let upcomingCount = 0;
+    let completedCount = 0;
+    let canceledCount = 0;
+    
+    // Get current date for comparison (normalized to start of day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Process each booking
+    bookingsData.forEach(booking => {
+      if (!booking.status || !booking.date) return;
+      
+      // Convert status to lowercase for case-insensitive comparison
+      const statusLower = booking.status.toLowerCase().trim();
+      
+      // Parse booking date (normalized to start of day)
+      const bookingDate = new Date(booking.date);
+      bookingDate.setHours(0, 0, 0, 0);
+      
+      // Count upcoming: status is confirmed
+      if (statusLower === 'confirmed') {
+        upcomingCount++;
+      }
+      
+      // Count completed: status is completed or date is in the past
+      if (statusLower === 'completed' || bookingDate < today) {
+        completedCount++;
+      }
+      
+      // Count canceled: includes cancelled, yet_to_refund, refunded
+      if (
+        statusLower === 'canceled' ||
+        statusLower === 'cancelled' ||
+        statusLower === 'yet_to_refund' ||
+        statusLower === 'refunded'
+      ) {
+        canceledCount++;
+      }
+    });
+    
+    return {
+      upcoming: upcomingCount,
+      completed: completedCount,
+      canceled: canceledCount,
+      total: bookingsData.length
+    };
+  };
 
   if (loading) return <div className="flex justify-center items-center h-screen">Loading dashboard...</div>;
   if (error) return <div className="text-red-500 text-center py-4">{error}</div>;
 
-  // Helper function to format subscription details
   const getSubscriptionDisplay = () => {
     if (premiumStatus.isPremium) {
       const planName = premiumStatus.plan?.charAt(0).toUpperCase() + premiumStatus.plan?.slice(1) || 'Premium';
@@ -135,7 +173,6 @@ const UserDashboard = () => {
             Explore Vehicles
           </button>
           
-          {/* New button to view rentals */}
           <button
             onClick={() => navigate('/user/rentals')}
             className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
@@ -167,7 +204,6 @@ const UserDashboard = () => {
         </div>
       </div>
       
-      {/* Dashboard summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white p-4 rounded-lg shadow-md">
           <h3 className="text-gray-500 text-sm">Total Bookings</h3>
@@ -180,6 +216,10 @@ const UserDashboard = () => {
         <div className="bg-white p-4 rounded-lg shadow-md">
           <h3 className="text-gray-500 text-sm">Completed Trips</h3>
           <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-md">
+          <h3 className="text-gray-500 text-sm">Canceled Trips</h3>
+          <p className="text-2xl font-bold text-red-600">{stats.canceled}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-md">
           <h3 className="text-gray-500 text-sm flex items-center">
@@ -196,7 +236,6 @@ const UserDashboard = () => {
         </div>
       </div>
       
-      {/* Add premium upgrade banner if not premium */}
       {!premiumStatus.isPremium && (
         <div className="bg-gradient-to-r from-purple-100 to-indigo-100 p-4 rounded-lg shadow-md mb-8 border border-purple-200">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -214,26 +253,24 @@ const UserDashboard = () => {
         </div>
       )}
       
-      {/* Remove Charts section and replace with simple stats */}
-      <div className="bg-white p-4 rounded-lg shadow-md mb-8">
-        <h2 className="text-lg font-semibold mb-4">Trip Statistics</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 border rounded-lg">
-            <h3 className="text-indigo-600 font-medium">Upcoming</h3>
-            <p className="text-2xl">{stats.upcoming}</p>
-          </div>
-          <div className="p-4 border rounded-lg">
-            <h3 className="text-green-600 font-medium">Completed</h3>
-            <p className="text-2xl">{stats.completed}</p>
-          </div>
-          <div className="p-4 border rounded-lg">
-            <h3 className="text-red-600 font-medium">Canceled</h3>
-            <p className="text-2xl">{stats.canceled}</p>
-          </div>
-        </div>
-      </div>
       
-      {/* Add a prominent Explore Vehicles section */}
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       <section className="container mx-auto bg-white p-6 rounded-lg shadow-md mb-8">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div>
@@ -253,7 +290,6 @@ const UserDashboard = () => {
         </div>
       </section>
       
-      {/* Recent bookings - keep this section as is */}
       <div className="bg-white p-4 rounded-lg shadow-md">
         <h2 className="text-lg font-semibold mb-4">Recent Bookings</h2>
         {bookings.length === 0 ? (
@@ -271,22 +307,33 @@ const UserDashboard = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {bookings.slice(0, 5).map((booking) => (
-                  <tr key={booking._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking._id.substring(0, 8)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking.destination}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(booking.date).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${booking.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                          booking.status === 'upcoming' ? 'bg-blue-100 text-blue-800' : 
-                          'bg-red-100 text-red-800'}`}>
-                        {booking.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${booking.amount}</td>
-                  </tr>
-                ))}
+                {bookings.slice(0, 5).map((booking) => {
+                  // Determine if the booking is in the past
+                  const bookingDate = new Date(booking.date);
+                  bookingDate.setHours(0, 0, 0, 0);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  const isPast = bookingDate < today;
+                  const statusLower = booking.status ? booking.status.toLowerCase().trim() : '';
+
+                  return (
+                    <tr key={booking._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking._id.substring(0, 8)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{booking.destination || 'N/A'}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(booking.date).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                          ${statusLower === 'completed' || isPast ? 'bg-green-100 text-green-800' : 
+                            statusLower === 'confirmed' ? 'bg-blue-100 text-blue-800' : 
+                            (statusLower === 'cancelled' || statusLower === 'yet_to_refund' || statusLower === 'refunded') ? 'bg-red-100 text-red-800' : 
+                            'bg-gray-100 text-gray-800'}`}>
+                          {booking.status ? booking.status.charAt(0).toUpperCase() + booking.status.slice(1) : 'Unknown'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${booking.amount || 'N/A'}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             {bookings.length > 5 && (

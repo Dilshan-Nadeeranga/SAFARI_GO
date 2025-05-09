@@ -63,7 +63,7 @@ const PublicSafaris = () => {
       {/* Simple Navigation */}
       <nav className="bg-blue-600 shadow-lg">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <a href="/" className="text-white text-2xl font-extrabold">LOGO</a>
+          <a href="/" className="text-white text-2xl font-extrabold">SafariGo</a>
           <div className="hidden md:flex items-center space-x-6">
             <a href="/" className="text-white hover:text-blue-200 transition-colors">Home</a>
             <a href="/LoginForm" className="text-white hover:text-blue-200 transition-colors">Login</a>

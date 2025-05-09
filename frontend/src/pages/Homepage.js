@@ -170,7 +170,7 @@ function HomePage() {
       {/* Navbar */}
       <nav className="bg-blue-600 shadow-lg">
         <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <a href="/" className="text-white text-2xl font-extrabold">LOGO</a>
+          <a href="/" className="text-white text-2xl font-extrabold">SafariGo</a>
           <div className="hidden md:flex items-center space-x-6">
             <a href="/allListings" className="text-white hover:text-blue-200 transition-colors">Safaris</a>
             <a href="/explore-safaris" className="text-white hover:text-blue-200 transition-colors">Explore Safaris</a>
@@ -220,7 +220,7 @@ function HomePage() {
               </div>
             </div>
             <a href="/about" className="text-white hover:text-blue-200 transition-colors">About Us</a>
-            <a href="/maintenance" className="text-white hover:text-blue-200 transition-colors">Blogs</a>
+            <a href="/blog" className="text-white hover:text-blue-200 transition-colors">Blog</a>
             <div className="relative dropdown-container">
               <button
                 className="text-white hover:text-blue-200 flex items-center"
@@ -557,7 +557,7 @@ function HomePage() {
                   <a href="/careers" className="text-white hover:text-blue-200 transition-colors">Careers</a>
                 </li>
                 <li>
-                  <a href="/maintenance" className="text-white hover:text-blue-200 transition-colors">Blogs</a>
+                  <a href="/blog" className="text-white hover:text-blue-200 transition-colors">Blog</a>
                 </li>
               </ul>
             </div>
