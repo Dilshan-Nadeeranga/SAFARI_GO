@@ -1,12 +1,12 @@
 const express = require("express");
 const { auth, authorize } = require("../middleware/auth");
 const User = require('../models/User');
-const Booking = require('../models/Booking');  // Make sure this is added
+const Booking = require('../models/Booking');
 const CustomerProfile = require('../models/CustomerProfile');
 const GuideProfile = require('../models/GuideProfile');
 const VehicleOwnerProfile = require('../models/VehicleOwnerProfile');
 const PDFDocument = require('pdfkit');
-const Vehicle = require('../models/Vehicle'); // Add this to fix Vehicle model reference
+const Vehicle = require('../models/Vehicle');
 
 const router = express.Router();
 
@@ -76,7 +76,7 @@ router.get('/stats', auth, authorize(['admin']), async (req, res) => {
   }
 });
 
-// Modified premium users PDF report download endpoint
+// Modified premium users PDF report download endpoint (Name column removed)
 router.get('/premium-users/report', auth, authorize(['admin']), async (req, res) => {
   try {
     console.log('Generating premium users PDF report');
@@ -146,16 +146,15 @@ router.get('/premium-users/report', auth, authorize(['admin']), async (req, res)
       .moveDown(2);
     
     if (premiumUsers.length > 0) {
-      // Add table headers
+      // Add table headers (Name column removed)
       const startY = doc.y;
       doc.font('Helvetica-Bold')
         .fontSize(10)
         .fillColor('#1a2a44')
         .text('User Email', 50, startY, { width: 180 })
-        .text('Name', 230, startY, { width: 100 })
-        .text('Plan', 330, startY, { width: 80 })
-        .text('Discount', 410, startY, { width: 60 })
-        .text('Expires On', 470, startY, { width: 100 });
+        .text('Plan', 230, startY, { width: 80 })
+        .text('Discount', 310, startY, { width: 60 })
+        .text('Expires On', 370, startY, { width: 100 });
       
       // Draw header underline
       doc.moveTo(50, startY + 15)
@@ -178,10 +177,9 @@ router.get('/premium-users/report', auth, authorize(['admin']), async (req, res)
             .fontSize(10)
             .fillColor('#1a2a44')
             .text('User Email', 50, newY, { width: 180 })
-            .text('Name', 230, newY, { width: 100 })
-            .text('Plan', 330, newY, { width: 80 })
-            .text('Discount', 410, newY, { width: 60 })
-            .text('Expires On', 470, newY, { width: 100 });
+            .text('Plan', 230, newY, { width: 80 })
+            .text('Discount', 310, newY, { width: 60 })
+            .text('Expires On', 370, newY, { width: 100 });
           
           doc.moveTo(50, newY + 15)
             .lineTo(doc.page.width - 50, newY + 15)
@@ -205,10 +203,9 @@ router.get('/premium-users/report', auth, authorize(['admin']), async (req, res)
         
         doc.fillColor('#333')
           .text(user.email || 'N/A', 50, rowY, { width: 180 })
-          .text(user.name || 'N/A', 230, rowY, { width: 100 })
-          .text(planName, 330, rowY, { width: 80 })
-          .text(`${user.discountRate || 0}%`, 410, rowY, { width: 60 })
-          .text(expiryDate, 470, rowY, { width: 100 })
+          .text(planName, 230, rowY, { width: 80 })
+          .text(`${user.discountRate || 0}%`, 310, rowY, { width: 60 })
+          .text(expiryDate, 370, rowY, { width: 100 })
           .moveDown(0.5);
       });
     } else {
