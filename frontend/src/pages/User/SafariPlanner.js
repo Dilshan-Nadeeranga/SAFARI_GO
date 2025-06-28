@@ -213,7 +213,7 @@ const SafariPlanner = () => {
                 <p className="text-sm text-gray-600 mb-4">
                   <strong>Estimated Cost:</strong> {itinerary.cost}
                 </p>
-                <button
+                {/*<button
                   onClick={() => alert("Proceeding to booking...")}
                   className="bg-green-600 text-white py-2 px-4 rounded-xl shadow-lg hover:bg-green-700 transition-all"
                 >
@@ -224,7 +224,7 @@ const SafariPlanner = () => {
                   className="ml-4 bg-blue-600 text-white py-2 px-4 rounded-xl shadow-lg hover:bg-blue-700 transition-all"
                 >
                   Chat with SafariBot
-                </button>
+                </button>*/}
               </div>
             </div>
           </div>

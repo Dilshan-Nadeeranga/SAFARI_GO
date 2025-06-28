@@ -49,7 +49,6 @@ export const generateVehiclePdf = (vehicle, ownerData = {}) => {
     const vehicleInfo = [
       { label: 'Type:', value: vehicle.type || 'N/A' },
       { label: 'License Plate:', value: vehicle.licensePlate || 'N/A' },
-      { label: 'Status:', value: vehicle.status || 'N/A' },
       { label: 'Capacity:', value: `${vehicle.capacity || 'N/A'} passengers` },
       { label: 'Features:', value: vehicle.features && vehicle.features.length ? vehicle.features.join(', ') : 'None' }
     ];

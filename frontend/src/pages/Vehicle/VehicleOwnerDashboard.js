@@ -363,14 +363,14 @@ const VehicleOwnerDashboard = () => {
                     <p className="mb-2"><span className="font-semibold">Type:</span> {selectedVehicle.type}</p>
                     <p className="mb-2"><span className="font-semibold">License Plate:</span> {selectedVehicle.licensePlate}</p>
                     <p className="mb-2"><span className="font-semibold">Capacity:</span> {selectedVehicle.capacity} passengers</p>
-                    <p className="mb-2"><span className="font-semibold">Status:</span> 
+                    {/*<p className="mb-2"><span className="font-semibold">Status:</span> 
                       <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full 
                         ${selectedVehicle.status === 'active' ? 'bg-green-100 text-green-800' : 
                           selectedVehicle.status === 'maintenance' ? 'bg-amber-100 text-amber-800' : 
                           'bg-red-100 text-red-800'}`}>
                         {selectedVehicle.status}
                       </span>
-                    </p>
+                    </p>*/}
                     <p className="mb-2"><span className="font-semibold">Features:</span> {selectedVehicle.features?.join(', ') || 'None'}</p>
                   </div>
                   <div>
