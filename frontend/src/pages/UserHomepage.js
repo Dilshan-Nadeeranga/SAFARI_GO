@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useRef } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import axios from 'axios';
 import safari1 from "../Componets/assets/safari1.jpg";
 import safari2 from "../Componets/assets/safari2.jpg";
@@ -10,11 +10,27 @@ const UserHomepage = () => {
   const [user, setUser] = useState(null);
   const [premiumStatus, setPremiumStatus] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const [featuredTours, setFeaturedTours] = useState([]);
   const [displayedTours, setDisplayedTours] = useState([]);
   const [loadingTours, setLoadingTours] = useState(false);
   const [filterOption, setFilterOption] = useState("Date");
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const role = localStorage.getItem('role');
@@ -92,10 +108,20 @@ const UserHomepage = () => {
     setFilterOption(e.target.value);
   };
 
-  const handleLogout = () => {
+  const handleLogout = (e) => {
+    if (e) {
+      e.preventDefault();
+    }
     localStorage.removeItem("token");
     localStorage.removeItem("role");
+    setProfileDropdownOpen(false);
     navigate("/LoginForm");
+  };
+
+  const handleProfileClick = (e) => {
+    e.preventDefault();
+    setProfileDropdownOpen(false);
+    navigate("/UserProfile");
   };
 
   const navigateToExploreVehicles = () => {
@@ -110,11 +136,11 @@ const UserHomepage = () => {
           <div className="text-3xl font-extrabold tracking-tight">SafariGo</div>
           
           <nav className="hidden md:flex space-x-8">
-            <a href="/UserHomepage" className="text-lg hover:text-blue-200 transition-colors duration-200">Home</a>
-            <a href="/discover" className="text-lg hover:text-blue-200 transition-colors duration-200">Discover</a>
-            <a href="/activities" className="text-lg hover:text-blue-200 transition-colors duration-200">Activities</a>
-            <a href="/about" className="text-lg hover:text-blue-200 transition-colors duration-200">About</a>
-            <a href="/contact" className="text-lg hover:text-blue-200 transition-colors duration-200">Contact</a>
+            <button onClick={() => navigate("/UserHomepage")} className="text-lg hover:text-blue-200 transition-colors duration-200">Home</button>
+            <button onClick={() => navigate("/discover")} className="text-lg hover:text-blue-200 transition-colors duration-200">Discover</button>
+            <button onClick={() => navigate("/activities")} className="text-lg hover:text-blue-200 transition-colors duration-200">Activities</button>
+            <button onClick={() => navigate("/about")} className="text-lg hover:text-blue-200 transition-colors duration-200">About</button>
+            <button onClick={() => navigate("/contact")} className="text-lg hover:text-blue-200 transition-colors duration-200">Contact</button>
             {premiumStatus?.isPremium && (
               <a href="/user/subscriptions" className="flex items-center text-lg hover:text-blue-200 transition-colors duration-200">
                 <span className="text-yellow-300 mr-2">✨</span>
@@ -132,8 +158,11 @@ const UserHomepage = () => {
             </svg>
           </button>
 
-          <div className="relative group">
-            <div className="flex items-center cursor-pointer">
+          <div className="relative" ref={dropdownRef}>
+            <div 
+              className="flex items-center cursor-pointer"
+              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+            >
               {user ? (
                 <div className="flex items-center space-x-3">
                   {user.profilePicture ? (
@@ -149,38 +178,42 @@ const UserHomepage = () => {
                       className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
                     />
                   )}
-                  <span
-                    className="text-lg font-medium hover:text-blue-200 transition-colors duration-200"
-                    onClick={() => navigate("/UserProfile")}
-                  >
-                    {user.name}
+                  <span className="text-lg font-medium hover:text-blue-200 transition-colors duration-200">
+                    {user.name || 'User'}
                     {premiumStatus?.isPremium && (
                       <span className="ml-2 bg-yellow-300 text-blue-800 text-xs px-2 py-1 rounded-full font-bold">PREMIUM</span>
                     )}
                   </span>
+                  <svg 
+                    className={`w-4 h-4 ml-1 transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </div>
               ) : (
-                <a href="/UserProfile" className="text-lg hover:text-blue-200 transition-colors duration-200">User Profile</a>
+                <Link to="/UserProfile" className="text-lg hover:text-blue-200 transition-colors duration-200">User Profile</Link>
               )}
             </div>
-            {user && (
-              <ul className="absolute right-0 hidden group-hover:block bg-white shadow-lg rounded-lg mt-2 z-10 w-48">
+            {user && profileDropdownOpen && (
+              <ul className="absolute right-0 bg-white shadow-lg rounded-lg mt-2 z-50 w-48 border border-gray-200">
                 <li>
-                  <a
-                    href="/UserProfile"
-                    className="block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  <button
+                    onClick={handleProfileClick}
+                    className="w-full text-left block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                   >
                     User Profile
-                  </a>
+                  </button>
                 </li>
                 <li>
-                  <a
-                    href="/"
+                  <button
                     onClick={handleLogout}
-                    className="block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                    className="w-full text-left block px-4 py-3 text-gray-800 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                   >
                     Logout
-                  </a>
+                  </button>
                 </li>
               </ul>
             )}
@@ -189,11 +222,11 @@ const UserHomepage = () => {
 
         {mobileMenuOpen && (
           <nav className="md:hidden bg-blue-600 text-white px-4 py-4">
-            <a href="/UserHomepage" className="block py-2 text-lg hover:text-blue-200 transition-colors">Home</a>
-            <a href="/discover" className="block py-2 text-lg hover:text-blue-200 transition-colors">Discover</a>
-            <a href="/activities" className="block py-2 text-lg hover:text-blue-200 transition-colors">Activities</a>
-            <a href="/about" className="block py-2 text-lg hover:text-blue-200 transition-colors">About</a>
-            <a href="/contact" className="block py-2 text-lg hover:text-blue-200 transition-colors">Contact</a>
+            <button onClick={() => { navigate("/UserHomepage"); setMobileMenuOpen(false); }} className="block w-full text-left py-2 text-lg hover:text-blue-200 transition-colors">Home</button>
+            <button onClick={() => { navigate("/discover"); setMobileMenuOpen(false); }} className="block w-full text-left py-2 text-lg hover:text-blue-200 transition-colors">Discover</button>
+            <button onClick={() => { navigate("/activities"); setMobileMenuOpen(false); }} className="block w-full text-left py-2 text-lg hover:text-blue-200 transition-colors">Activities</button>
+            <button onClick={() => { navigate("/about"); setMobileMenuOpen(false); }} className="block w-full text-left py-2 text-lg hover:text-blue-200 transition-colors">About</button>
+            <button onClick={() => { navigate("/contact"); setMobileMenuOpen(false); }} className="block w-full text-left py-2 text-lg hover:text-blue-200 transition-colors">Contact</button>
             {premiumStatus?.isPremium && (
               <a href="/user/subscriptions" className="block py-2 text-lg hover:text-blue-200 transition-colors flex items-center">
                 <span className="text-yellow-300 mr-2">✨</span>
@@ -398,12 +431,12 @@ const UserHomepage = () => {
             <div>
               <h3 className="text-2xl font-bold text-blue-200 mb-4">Quick Links</h3>
               <ul className="space-y-3">
-                <li><a href="/discover" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Discover</a></li>
-                <li><a href="/about" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">About Us</a></li>
-                <li><a href="/blog" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Blog & Articles</a></li>
-                <li><a href="/feedback" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Leave Feedback</a></li>
-                <li><a href="/services" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Services</a></li>
-                <li><a href="/community" className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Community</a></li>
+                <li><button onClick={() => navigate("/discover")} className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Discover</button></li>
+                <li><button onClick={() => navigate("/about")} className="text-gray-300 hover:text-blue-200 transition-colors duration-200">About Us</button></li>
+                <li><button onClick={() => navigate("/blog")} className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Blog & Articles</button></li>
+                <li><button onClick={() => navigate("/feedback")} className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Leave Feedback</button></li>
+                <li><button onClick={() => navigate("/services")} className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Services</button></li>
+                <li><button onClick={() => navigate("/community")} className="text-gray-300 hover:text-blue-200 transition-colors duration-200">Community</button></li>
               </ul>
             </div>
             <div>

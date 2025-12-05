@@ -99,25 +99,66 @@ function HomePage() {
   useEffect(() => {
     const fetchSafarisAndLocations = async () => {
       try {
-        const response = await axios.get("http://localhost:8070/safaris");
-        // Only show active safaris that have been approved by admin
+        setLoading(true);
+        setError(null);
+        
+        // Fetch all safaris (backend defaults to active, but we can also try without status filter)
+        const response = await axios.get("http://localhost:8070/safaris", {
+          params: { status: 'active' } // Explicitly request active safaris
+        });
+        
+        console.log('Fetched safaris:', response.data);
+        
+        if (!response.data || !Array.isArray(response.data)) {
+          console.warn('Invalid response format:', response.data);
+          setSafaris([]);
+          setFilteredSafaris([]);
+          setLoading(false);
+          return;
+        }
+        
+        // Process safaris - backend already filters for active, but we'll double-check
         const verifiedSafaris = response.data
-          .filter((safari) => safari.status === 'active')
-          .map((safari) => ({
-            ...safari,
-            image: imageMap[safari.imageName] || safari1,
-          }));
+          .filter((safari) => !safari.status || safari.status === 'active')
+          .map((safari) => {
+            // Handle images - use first image from array or fallback
+            let imageUrl = safari1;
+            if (safari.images && Array.isArray(safari.images) && safari.images.length > 0) {
+              // If image path starts with http, use as is, otherwise prepend server URL
+              const imagePath = safari.images[0];
+              imageUrl = imagePath.startsWith('http') 
+                ? imagePath 
+                : `http://localhost:8070/${imagePath.replace(/^\/+/, '')}`;
+            } else if (safari.imageName && imageMap[safari.imageName]) {
+              imageUrl = imageMap[safari.imageName];
+            }
+            
+            return {
+              ...safari,
+              image: imageUrl,
+              // Map title to safariType for backward compatibility
+              safariType: safari.title || safari.safariType || 'Safari',
+              safariLocation: safari.location || safari.safariLocation || 'Unknown',
+              // Default rating if not present
+              buyerRating: safari.buyerRating || safari.rating || 5,
+            };
+          });
+        
+        console.log('Processed safaris:', verifiedSafaris);
         setSafaris(verifiedSafaris);
         setFilteredSafaris(verifiedSafaris);
 
         const uniqueLocations = [
-          ...new Set(verifiedSafaris.map((safari) => safari.location))
+          ...new Set(verifiedSafaris.map((safari) => safari.location).filter(Boolean))
         ];
         setLocations(uniqueLocations);
 
         setLoading(false);
       } catch (error) {
-        setError("Error fetching safaris. Please try again later.");
+        console.error('Error fetching safaris:', error);
+        setError(error.response?.data?.error || error.message || "Error fetching safaris. Please try again later.");
+        setSafaris([]);
+        setFilteredSafaris([]);
         setLoading(false);
       }
     };
@@ -380,40 +421,55 @@ function HomePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {currentSafaris.length === 0 ? (
-            <div className="col-span-full text-center text-xl text-blue-600 font-semibold">
-              No safaris match your criteria.
-            </div>
-          ) : (
-            currentSafaris.map((safari) => (
-              <div key={safari._id} className="bg-white shadow-lg rounded-lg overflow-hidden transform hover:scale-105 transition-transform">
-                <img
-                  src={safari.image}
-                  alt="Safari"
-                  className="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => handleBooking(safari)}
-                />
-                <div className="p-4">
-                  <h5 className="text-lg font-semibold text-blue-800">
-                    {safari.safariType} - {safari.safariLocation}
-                  </h5>
-                  <p className="text-blue-600 font-medium">Rs {safari.price.toLocaleString()}</p>
-                  <div className="flex mt-2">
-                    {Array.from({ length: 5 }, (_, index) => (
-                      <span
-                        key={index}
-                        className={index < safari.buyerRating ? "text-yellow-400" : "text-blue-200"}
-                      >
-                        ★
-                      </span>
-                    ))}
+        {loading ? (
+          <div className="col-span-full text-center text-xl text-blue-600 font-semibold py-10">
+            Loading safari packages...
+          </div>
+        ) : error ? (
+          <div className="col-span-full text-center text-xl text-red-600 font-semibold py-10">
+            {error}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {currentSafaris.length === 0 ? (
+              <div className="col-span-full text-center text-xl text-blue-600 font-semibold py-10">
+                No safaris match your criteria.
+              </div>
+            ) : (
+              currentSafaris.map((safari) => (
+                <div key={safari._id} className="bg-white shadow-lg rounded-lg overflow-hidden transform hover:scale-105 transition-transform">
+                  <img
+                    src={safari.image}
+                    alt={safari.title || safari.safariType || "Safari"}
+                    className="w-full h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => handleBooking(safari)}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = safari1;
+                    }}
+                  />
+                  <div className="p-4">
+                    <h5 className="text-lg font-semibold text-blue-800 mb-1">
+                      {safari.title || safari.safariType || "Safari Package"}
+                    </h5>
+                    <p className="text-sm text-gray-600 mb-2">{safari.location || safari.safariLocation || "Location"}</p>
+                    <p className="text-blue-600 font-medium mb-2">Rs {safari.price ? safari.price.toLocaleString() : 'N/A'}</p>
+                    <div className="flex mt-2">
+                      {Array.from({ length: 5 }, (_, index) => (
+                        <span
+                          key={index}
+                          className={index < (safari.buyerRating || 5) ? "text-yellow-400" : "text-blue-200"}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
+              ))
+            )}
+          </div>
+        )}
 
         <div className="flex justify-center mt-6 gap-3">
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
