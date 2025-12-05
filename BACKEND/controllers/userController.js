@@ -175,8 +175,26 @@ exports.getProfile = async (req, res) => {
       }
     }
     
+    // Get user email from User model
+    const user = await User.findById(req.user.id).select('email');
+    const profileData = profile.toObject ? profile.toObject() : profile;
+    
+    // Add email to profile data
+    if (user && user.email) {
+      profileData.email = user.email;
+    }
+    
+    // Ensure all profile fields are included (including Gender)
+    console.log("Profile data before sending:", {
+      name: profileData.name,
+      Lname: profileData.Lname,
+      Gender: profileData.Gender,
+      Phonenumber1: profileData.Phonenumber1,
+      email: profileData.email
+    });
+    
     console.log("Sending profile response");
-    res.status(200).json(profile);
+    res.status(200).json(profileData);
   } catch (error) {
     console.error("Error in getProfile:", error);
     res.status(500).json({ error: 'Error fetching profile' });

@@ -164,42 +164,44 @@ const BlogArticles = () => {
 
   return (
     <div
-      className="min-h-screen bg-cover bg-center"
+      className="min-h-screen bg-cover bg-center bg-fixed"
       style={{ backgroundImage: `url(${blogImage})` }}
     >
-      <div className="bg-black bg-opacity-50 min-h-screen text-white p-10">
-        <h1 className="text-4xl font-bold mb-6 text-center">Blog & Articles</h1>
-        <div className="flex flex-col gap-6 max-w-3xl mx-auto">
-          {articles.map((article) => (
-            <div
-              key={article.id}
-              className="bg-white bg-opacity-20 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow"
-            >
-              <img
-                src={article.image}
-                alt={article.title}
-                className="w-full h-80 object-cover rounded-md mb-4"
-                onError={(e) => {
-                  e.target.src = "https://via.placeholder.com/300x150?text=Image+Not+Found";
-                  e.target.alt = "Image failed to load";
-                }}
-              />
-              <h2 className="text-xl font-semibold text-black mb-2">{article.title}</h2>
-              <p className="text-sm text-gray-600 mb-2">{article.date}</p>
-              <p className="text-black">
-                {article.excerpt}{" "}
-                <button
-                  onClick={() => toggleParagraph(article.id)}
-                  className="text-blue-300 hover:text-blue-100 underline focus:outline-none"
-                >
-                  {visibleParagraphs[article.id] ? "Read Less" : "Read More"}
-                </button>
-              </p>
-              {visibleParagraphs[article.id] && (
-                <p className="text-black mt-2">{article.paragraph}</p>
-              )}
-            </div>
-          ))}
+      <div className="bg-black bg-opacity-60 min-h-screen text-white p-6 md:p-10">
+        <div className="container mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center text-white">Blog & Articles</h1>
+          <div className="flex flex-col gap-6 max-w-4xl mx-auto">
+            {articles.map((article) => (
+              <div
+                key={article.id}
+                className="bg-white bg-opacity-95 p-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <img
+                  src={article.image}
+                  alt={article.title}
+                  className="w-full h-64 md:h-80 object-cover rounded-md mb-4"
+                  onError={(e) => {
+                    e.target.src = "https://via.placeholder.com/800x400?text=Safari+Image";
+                    e.target.alt = "Image failed to load";
+                  }}
+                />
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">{article.title}</h2>
+                <p className="text-sm text-gray-500 mb-3">{article.date}</p>
+                <p className="text-gray-700 mb-3">
+                  {article.excerpt}{" "}
+                  <button
+                    onClick={() => toggleParagraph(article.id)}
+                    className="text-blue-600 hover:text-blue-800 underline font-semibold focus:outline-none transition-colors"
+                  >
+                    {visibleParagraphs[article.id] ? "Read Less" : "Read More"}
+                  </button>
+                </p>
+                {visibleParagraphs[article.id] && (
+                  <p className="text-gray-700 mt-3 leading-relaxed">{article.paragraph}</p>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

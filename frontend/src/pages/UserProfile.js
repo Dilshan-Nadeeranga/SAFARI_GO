@@ -22,6 +22,7 @@ const UserProfile = () => {
         });
 
         if (response.status === 200) {
+          console.log("User profile data received:", response.data);
           setUser(response.data);
         }
       } catch (error) {
@@ -98,9 +99,10 @@ const UserProfile = () => {
               </div>
             )}
             <div className="user-info-form">
+              <p><strong>Email:</strong> {user.email || "N/A"}</p>
               <p><strong>First Name:</strong> {user.name || "N/A"}</p>
               <p><strong>Last Name:</strong> {user.Lname || "N/A"}</p>
-              <p><strong>Gender:</strong> {user.Gender || "N/A"}</p>
+              <p><strong>Gender:</strong> {user.Gender || user.gender || "Not specified"}</p>
               <p><strong>Phone:</strong> {user.Phonenumber1 || "N/A"}</p>
               <p><strong>Subscription Plan:</strong> {user.plan || "Silver"}</p>
               <div className="form-buttons">

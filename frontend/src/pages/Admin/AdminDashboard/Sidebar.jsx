@@ -9,11 +9,46 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [showSidebar, setShowSidebar] = useState(true);
   const [showQuickBooking, setShowQuickBooking] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState('light');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     navigate('/LoginForm');
+  };
+
+  const changeTheme = (theme) => {
+    setCurrentTheme(theme);
+    localStorage.setItem('adminTheme', theme);
+    
+    // Apply theme styles
+    const sidebar = document.querySelector('.sidebar');
+    const homeContainer = document.querySelector('.homeContainer');
+    
+    if (sidebar && homeContainer) {
+      switch (theme) {
+        case 'light':
+          sidebar.style.backgroundColor = 'white';
+          sidebar.style.color = '#333';
+          homeContainer.style.backgroundColor = 'lightblue';
+          homeContainer.style.color = '#333';
+          break;
+        case 'dark':
+          sidebar.style.backgroundColor = '#333';
+          sidebar.style.color = 'white';
+          homeContainer.style.backgroundColor = '#1a1a1a';
+          homeContainer.style.color = 'white';
+          break;
+        case 'blue':
+          sidebar.style.backgroundColor = 'darkblue';
+          sidebar.style.color = 'white';
+          homeContainer.style.backgroundColor = '#e6f3ff';
+          homeContainer.style.color = '#333';
+          break;
+        default:
+          break;
+      }
+    }
   };
 
   const buttonStyle = {
@@ -28,6 +63,13 @@ const Sidebar = () => {
     fontSize: '14px',
     color: 'inherit'
   };
+
+  // Load saved theme on component mount
+  React.useEffect(() => {
+    const savedTheme = localStorage.getItem('adminTheme') || 'light';
+    setCurrentTheme(savedTheme);
+    changeTheme(savedTheme);
+  }, []);
 
   return (
     <>
@@ -67,28 +109,18 @@ const Sidebar = () => {
               <Link to="/admin/vehicle-owners">
                 <FaCar className="icon" />
                 <span>Vehicle Owners</span>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </span>e="title">USEFUL</p>
-                <span className="text">Booking Revenue</span>
-              </Link>o="/admin/booking-history">
-            </div>aCalendarCheck className="icon" />
-            <li><span>Bookings</span>
+              </Link>
+            </li>
+            <p className="title">USEFUL</p>
+            <li>
+              <Link to="/admin/booking-history">
+                <FaCalendarCheck className="icon" />
+                <span>Bookings</span>
+              </Link>
+            </li>
+            <li>
               <button 
                 className="quick-booking-btn"
-                onClick={() => setShowQuickBooking(true)}
-              >Link to="/admin/booking-revenue" className="link">
-                <FaPlus className="icon" />
-                <span>Quick Book</span>w.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              </button>th strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </li> </svg>
-            <li></span>
-              <Link to="/admin/notifications"> Revenue</span>
-                <FaBell className="icon" />
-                <span>Notifications</span>
-              </Link>
-            </li>tton 
-            <li>className="quick-booking-btn"
                 onClick={() => setShowQuickBooking(true)}
                 style={buttonStyle}
               >
@@ -121,6 +153,37 @@ const Sidebar = () => {
               </button>
             </li>
           </ul>
+        </div>
+        
+        {/* Theme Switcher */}
+        <div className="bottom">
+          <div 
+            className="colorOption" 
+            onClick={() => changeTheme('light')}
+            style={{ 
+              backgroundColor: 'whitesmoke',
+              border: currentTheme === 'light' ? '2px solid #7451f8' : '1px solid #7451f8'
+            }}
+            title="Light Theme"
+          ></div>
+          <div 
+            className="colorOption" 
+            onClick={() => changeTheme('dark')}
+            style={{ 
+              backgroundColor: '#333',
+              border: currentTheme === 'dark' ? '2px solid #7451f8' : '1px solid #7451f8'
+            }}
+            title="Dark Theme"
+          ></div>
+          <div 
+            className="colorOption" 
+            onClick={() => changeTheme('blue')}
+            style={{ 
+              backgroundColor: 'darkblue',
+              border: currentTheme === 'blue' ? '2px solid #7451f8' : '1px solid #7451f8'
+            }}
+            title="Blue Theme"
+          ></div>
         </div>
       </div>
       

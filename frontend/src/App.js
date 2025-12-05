@@ -16,6 +16,9 @@ import UserSettings from "./pages/User/UserSettings.js";
 import UserSafaris from './pages/User/UserSafaris';
 import PublicSafaris from './pages/PublicSafaris';
 import BookSafari from './pages/BookSafari';
+import AllListings from './pages/AllListings';
+import Discover from './pages/Discover';
+import Activities from './pages/Activities';
 
 
 
@@ -71,10 +74,14 @@ function App() {
           <Route path="/UserHomepage" element={<UserHomepage />} />
           <Route path="/UserProfile" element={<UserProfile />} />
           <Route path="/explore-safaris" element={<PublicSafaris />} />
+          <Route path="/allListings" element={<AllListings />} />
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/activities" element={<Activities />} />
           <Route path="/BookSafari" element={<BookSafari />} />
 
            
-          <Route path="/blog" element={<Blog />} /> {/* Updated to /blog */}
+          <Route path="/blog" element={<Blog />} /> {/* Updated to /blog */}
+          <Route path="/maintenance" element={<Blog />} /> {/* Maintenance/Blogs page */}
 
           <Route path="/about" element={<AboutUs />} /> {/* Updated to /about */}
           <Route path="/contact" element={<Contact />} /> {/* Updated to /contact */}
